@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using glytics.Models;
 using glytics.Persistence;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -32,6 +33,9 @@ namespace glytics
             services.AddControllers();
             services.AddSwaggerGen(c => { c.SwaggerDoc("v1", new OpenApiInfo {Title = "glytics", Version = "v1"}); });
 
+            services.AddScoped<Authentication>().AddDbContext<GlyticsDbContext>(options => options
+                .UseMySql(Configuration.GetConnectionString("home"), new MariaDbServerVersion(new Version(10, 5, 8)), mariadbOptions => mariadbOptions.CharSetBehavior(CharSetBehavior.NeverAppend)));
+
             services.AddDbContext<GlyticsDbContext>(options => options
                 .UseMySql(Configuration.GetConnectionString("home"), new MariaDbServerVersion(new Version(10, 5, 8)), mariadbOptions => mariadbOptions.CharSetBehavior(CharSetBehavior.NeverAppend)));
         }
@@ -56,7 +60,7 @@ namespace glytics
                 .AllowAnyMethod()
                 .AllowAnyHeader()
                 .SetIsOriginAllowed(origin => true) // allow any origin
-                .AllowCredentials()); 
+                .AllowCredentials());
 
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
         }

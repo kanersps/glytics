@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace glytics.Models
@@ -9,5 +10,7 @@ namespace glytics.Models
         public Guid Id { get; set; }
         public string Username { get; set; }
         public string Password { get; set; }
+        
+        public List<APIKey> ApiKeys { get; set; }
     }
 }

@@ -13,6 +13,8 @@ namespace glytics.Models
         [Required]
         public string Address { get; set; }
         
+        public bool? Active { get; set; }
+        
         public Account Account { get; set; }
     }
 }

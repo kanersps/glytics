@@ -12,5 +12,6 @@ namespace glytics.Models
         public string Password { get; set; }
         
         public List<APIKey> ApiKeys { get; set; }
+        public List<Application> Applications { get; set; }
     }
 }

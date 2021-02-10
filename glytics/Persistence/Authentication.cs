@@ -37,7 +37,7 @@ namespace glytics.Persistence
 
         public async Task<APIKey> Authorized(string _key)
         {
-            return await _db.ApiKey.Include(key => key.Account).FirstOrDefaultAsync(key => key.Key.ToString() == _key);
+            return await _db.ApiKey.Include(key => key.Account).ThenInclude(acc => acc.Applications).FirstOrDefaultAsync(key => key.Key.ToString() == _key);
         }
     }
 }

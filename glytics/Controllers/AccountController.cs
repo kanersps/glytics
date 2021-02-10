@@ -142,7 +142,7 @@ namespace glytics.Controllers
                 };
             }
 
-            _db.Account.Add(new Account()
+            await _db.Account.AddAsync(new Account()
             {
                 Username = _account.Username,
                 Password = Argon2.Hash(_account.Password)

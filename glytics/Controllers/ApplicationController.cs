@@ -57,6 +57,30 @@ namespace glytics.Controllers
 
             return new BadRequestResult();
         }
+        
+        [HttpPost("application/website/activate")]
+        public async Task<ActionResult> ActivateWebsite(ApplicationRemove website)
+        {
+            APIKey key = await _apiHandler.Authorized(Request.Headers["key"]);
+
+            if (key == null)
+                return new UnauthorizedResult();
+
+            Account account = await _db.Account.FirstOrDefaultAsync(acc => acc.Id == key.Account.Id);
+
+            if (account != null)
+            {
+                Application web = account.Applications.FirstOrDefault(w => w.TrackingCode == website.TrackingCode);
+
+                if (web != null) web.Active = true;
+
+                await _db.SaveChangesAsync();
+                
+                return new OkResult();
+            }
+
+            return new BadRequestResult();
+        }
 
         [HttpPost("application/website/delete")]
         public async Task<ActionResult> DeleteWebsite(ApplicationRemove website)

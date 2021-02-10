@@ -33,6 +33,53 @@ namespace glytics.Controllers
 
             return $"GL-{uniqueIDs}";
         }
+        
+        [HttpPost("application/website/deactivate")]
+        public async Task<ActionResult> DeactivateWebsite(ApplicationRemove website)
+        {
+            APIKey key = await _apiHandler.Authorized(Request.Headers["key"]);
+
+            if (key == null)
+                return new UnauthorizedResult();
+
+            Account account = await _db.Account.FirstOrDefaultAsync(acc => acc.Id == key.Account.Id);
+
+            Console.WriteLine(account);
+            if (account != null)
+            {
+                Application web = account.Applications.FirstOrDefault(w => w.TrackingCode == website.TrackingCode);
+
+                if (web != null) web.Active = false;
+
+                await _db.SaveChangesAsync();
+                
+                return new OkResult();
+            }
+
+            return new BadRequestResult();
+        }
+
+        [HttpPost("application/website/delete")]
+        public async Task<ActionResult> DeleteWebsite(Website website)
+        {
+            APIKey key = await _apiHandler.Authorized(Request.Headers["key"]);
+
+            if (key == null)
+                return new UnauthorizedResult();
+
+            Account account = await _db.Account.FirstOrDefaultAsync(acc => acc.Id == key.Account.Id);
+            if (account != null)
+            {
+                Application web = account.Applications.FirstOrDefault(w => w.TrackingCode == website.TrackingCode);
+
+                account.Applications.Remove(web);
+                await _db.SaveChangesAsync();
+                
+                return new OkResult();
+            }
+
+            return new BadRequestResult();
+        }
 
         [HttpGet("application/website/all")]
         public async Task<ActionResult<IList>> GetWebsites()
@@ -44,7 +91,7 @@ namespace glytics.Controllers
             
             
 
-            return key.Account.Applications.Select(app => new {app.Address, app.Name, app.TrackingCode}).ToList();
+            return key.Account.Applications.Select(app => new {app.Address, app.Name, app.TrackingCode, app.Active}).ToList();
         }
         
         [HttpPost("application/website/create")]

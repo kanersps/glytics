@@ -44,7 +44,6 @@ namespace glytics.Controllers
 
             Account account = await _db.Account.FirstOrDefaultAsync(acc => acc.Id == key.Account.Id);
 
-            Console.WriteLine(account);
             if (account != null)
             {
                 Application web = account.Applications.FirstOrDefault(w => w.TrackingCode == website.TrackingCode);
@@ -60,7 +59,7 @@ namespace glytics.Controllers
         }
 
         [HttpPost("application/website/delete")]
-        public async Task<ActionResult> DeleteWebsite(Website website)
+        public async Task<ActionResult> DeleteWebsite(ApplicationRemove website)
         {
             APIKey key = await _apiHandler.Authorized(Request.Headers["key"]);
 
@@ -72,7 +71,8 @@ namespace glytics.Controllers
             {
                 Application web = account.Applications.FirstOrDefault(w => w.TrackingCode == website.TrackingCode);
 
-                account.Applications.Remove(web);
+                _db.Application.Remove(web!);
+                
                 await _db.SaveChangesAsync();
                 
                 return new OkResult();

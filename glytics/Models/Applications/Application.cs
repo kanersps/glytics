@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace glytics.Models
 {
@@ -16,5 +17,7 @@ namespace glytics.Models
         public bool? Active { get; set; }
         
         public Account Account { get; set; }
+        
+        public List<ApplicationStatistic> Statistic { get; set; }
     }
 }

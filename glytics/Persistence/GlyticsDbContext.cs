@@ -9,6 +9,7 @@ namespace glytics.Persistence
         public DbSet<APIKey> ApiKey { get; set; }
         
         public DbSet<Application> Application { get; set; }
+        public DbSet<ApplicationStatistic> Statistic { get; set; }
         
         public GlyticsDbContext(DbContextOptions options) : base(options) {}
 

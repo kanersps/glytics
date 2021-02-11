@@ -55,6 +55,8 @@ namespace glytics
 
             app.UseRouting();
 
+            app.UseStaticFiles();
+
             app.UseAuthorization();
 
             app.UseCors(x => x

@@ -6,8 +6,11 @@ namespace glytics.Models
     {
         public string Name { get; set; }
         public string Address { get; set; }
-        public int LasthourViews { get; set; }
-        public int LasthourVisitors { get; set; }
+        public string TrackingSnippet { get; set; }
+        public int LastHourViews { get; set; }
+        public int LastHourVisitors { get; set; }
+        public int LastMonthViews { get; set; }
+        public int LastMonthVisitors { get; set; }
         
         public List<int> HourlyViews { get; set; }
         public List<int> HourlyVisitors { get; set; }

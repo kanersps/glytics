@@ -34,6 +34,11 @@ namespace glytics.Controllers
             return $"GL-{uniqueIDs}";
         }
 
+        private string GenerateTrackingJavascript(string id)
+        {
+            return "<script src=\"http://localhost/analytics.js\"></script>\n<script>\n\tgl(\"" + id + "\")\n</script>";
+        }
+
         public class TrackingCode
         {
             public string trackingCode { get; set; }
@@ -51,7 +56,34 @@ namespace glytics.Controllers
             
             if (account != null)
             {
-                Application web = account.Applications.FirstOrDefault(w => w.TrackingCode == trackingCode.trackingCode);
+                Application web = _db.Application.Include(app => app.Statistic).FirstOrDefault(w => w.TrackingCode == trackingCode.trackingCode);
+
+                if (web == null)
+                    return NotFound();
+
+                var hourlyVisitors = 0;
+                var hourlyViews = 0;
+                
+                var monthlyVisitors = 0;
+                var monthlyViews = 0;
+
+                if (web.Statistic.Count > 0)
+                {
+                    ApplicationStatistic last = web.Statistic[^1];
+
+                    hourlyVisitors = last.Visits;
+                    hourlyViews = last.PageViews;
+
+                    List<ApplicationStatistic> lastMonth =
+                        web.Statistic.OrderByDescending(stat => stat.Timestamp).Take(30 * 24).ToList();
+
+                    foreach (ApplicationStatistic stat in lastMonth)
+                    {
+                        monthlyViews += stat.PageViews;
+                        monthlyVisitors += stat.Visits;
+                    }
+
+                }
 
                 return new SimpleWebsiteDetails()
                 {
@@ -59,8 +91,11 @@ namespace glytics.Controllers
                     Name = web.Name,
                     HourlyViews = new List<int>(),
                     HourlyVisitors = new List<int>(),
-                    LasthourViews = 580312,
-                    LasthourVisitors = 12
+                    LastHourViews = hourlyViews,
+                    LastHourVisitors = hourlyVisitors,
+                    LastMonthViews = monthlyViews,
+                    LastMonthVisitors = monthlyVisitors,
+                    TrackingSnippet = GenerateTrackingJavascript(web.TrackingCode)
                 };
             }
 

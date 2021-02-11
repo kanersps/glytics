@@ -33,6 +33,39 @@ namespace glytics.Controllers
 
             return $"GL-{uniqueIDs}";
         }
+
+        public class TrackingCode
+        {
+            public string trackingCode { get; set; }
+        }
+        
+        [HttpPost("application/website/details/simple")]
+        public async Task<ActionResult<SimpleWebsiteDetails>> WebsiteSimpleDetails(TrackingCode trackingCode)
+        {
+            APIKey key = await _apiHandler.Authorized(Request.Headers["key"]);
+
+            if (key == null)
+                return new UnauthorizedResult();
+
+            Account account = await _db.Account.FirstOrDefaultAsync(acc => acc.Id == key.Account.Id);
+            
+            if (account != null)
+            {
+                Application web = account.Applications.FirstOrDefault(w => w.TrackingCode == trackingCode.trackingCode);
+
+                return new SimpleWebsiteDetails()
+                {
+                    Address = $"https://{web.Address}",
+                    Name = web.Name,
+                    HourlyViews = new List<int>(),
+                    HourlyVisitors = new List<int>(),
+                    LasthourViews = 580312,
+                    LasthourVisitors = 12
+                };
+            }
+
+            return new UnauthorizedResult();
+        }
         
         [HttpPost("application/website/deactivate")]
         public async Task<ActionResult> DeactivateWebsite(ApplicationRemove website)

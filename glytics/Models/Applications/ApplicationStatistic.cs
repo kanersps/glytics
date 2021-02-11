@@ -4,7 +4,6 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace glytics.Models
 {
-    [Table("ApplicationStatistic")]
     public class ApplicationStatistic
     {
         [Key]

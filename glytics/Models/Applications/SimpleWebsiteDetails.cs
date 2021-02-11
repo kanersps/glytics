@@ -2,7 +2,7 @@
 
 namespace glytics.Models
 {
-    public class SimpleWebsiteDetails
+    public class SimpleWebsiteDetails : IWebsiteDetail
     {
         public string Name { get; set; }
         public string Address { get; set; }
@@ -11,8 +11,5 @@ namespace glytics.Models
         public int LastHourVisitors { get; set; }
         public int LastMonthViews { get; set; }
         public int LastMonthVisitors { get; set; }
-        
-        public List<int> HourlyViews { get; set; }
-        public List<int> HourlyVisitors { get; set; }
     }
 }

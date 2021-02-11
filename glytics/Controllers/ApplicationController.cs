@@ -36,12 +36,53 @@ namespace glytics.Controllers
 
         private string GenerateTrackingJavascript(string id)
         {
-            return "<script src=\"http://localhost/analytics.js\"></script>\n<script>\n\tgl(\"" + id + "\")\n</script>";
+            return "<script src=\"https://localhost:5001/analytics.js\"></script>\n<script>\n\tgl(\"" + id + "\").send('view')\n</script>";
         }
 
         public class TrackingCode
         {
             public string trackingCode { get; set; }
+        }
+        
+        [HttpPost("application/website/details")]
+        public async Task<ActionResult<WebsiteDetails>> WebsiteDetails(TrackingCode trackingCode)
+        {
+            APIKey key = await _apiHandler.Authorized(Request.Headers["key"]);
+
+            if (key == null)
+                return new UnauthorizedResult();
+
+            Account account = await _db.Account.FirstOrDefaultAsync(acc => acc.Id == key.Account.Id);
+            
+            if (account != null)
+            {
+                Application web = _db.Application.Include(app => app.Statistic).FirstOrDefault(w => w.TrackingCode == trackingCode.trackingCode);
+
+                if (web == null)
+                    return NotFound();
+
+                var hourly = new List<ApplicationStatistic>();
+
+                if (web.Statistic.Count > 0)
+                {
+                    List<ApplicationStatistic> lastMonth =
+                        web.Statistic.OrderByDescending(stat => stat.Timestamp).Take(30 * 24).ToList();
+
+                    foreach (ApplicationStatistic stat in lastMonth)
+                    {
+                        hourly.Add(stat);
+                    }
+                }
+
+                return new WebsiteDetails()
+                {
+                    Address = $"https://{web.Address}",
+                    Name = web.Name,
+                    Hourly = hourly.Select(h => new WebsiteDetail{Timestamp = h.Timestamp, Visits = h.Visits, PageViews = h.PageViews}).ToList()
+                };
+            }
+
+            return new UnauthorizedResult();
         }
         
         [HttpPost("application/website/details/simple")]
@@ -89,8 +130,6 @@ namespace glytics.Controllers
                 {
                     Address = $"https://{web.Address}",
                     Name = web.Name,
-                    HourlyViews = new List<int>(),
-                    HourlyVisitors = new List<int>(),
                     LastHourViews = hourlyViews,
                     LastHourVisitors = hourlyVisitors,
                     LastMonthViews = monthlyViews,

@@ -36,8 +36,6 @@ namespace glytics.Controllers
             if (site == null)
                 return new BadRequestResult();
             
-            Console.WriteLine(request.Path);
-            
             ApplicationStatistic thisHour = site.Statistic.FirstOrDefault(stat => stat.Timestamp == RoundTimeHour(request.Sent));
             ApplicationStatisticPath thisHourPage = site.PathStatistic.FirstOrDefault(stat => stat.Timestamp == RoundTimeHour(request.Sent) && stat.Path == request.Path);
 

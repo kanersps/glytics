@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
-namespace glytics.Migrations
+namespace glytics.Data.Migrations
 {
     public partial class InitialDbCreation : Migration
     {

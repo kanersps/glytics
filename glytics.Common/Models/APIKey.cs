@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace glytics.Models
+namespace glytics.Common.Models
 {
     public class APIKey
     {

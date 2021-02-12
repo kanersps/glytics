@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace glytics.Models
+namespace glytics.Common.Models.Applications
 {
     public class SimpleWebsiteDetails : IWebsiteDetail
     {

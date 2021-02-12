@@ -1,4 +1,4 @@
-﻿namespace glytics.Models
+﻿namespace glytics.Common.Models.Applications
 {
     public class ApplicationRemove
     {

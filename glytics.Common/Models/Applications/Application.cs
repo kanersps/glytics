@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace glytics.Models
+namespace glytics.Common.Models.Applications
 {
     public class Application
     {

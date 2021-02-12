@@ -4,8 +4,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
-using glytics.Models;
-using glytics.Persistence;
+using glytics.Common.Models;
+using glytics.Common.Models.Applications;
+using glytics.Data.Persistence;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 

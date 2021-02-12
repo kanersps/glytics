@@ -2,8 +2,9 @@
 using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
-using glytics.Models;
-using glytics.Persistence;
+using glytics.Common.Models;
+using glytics.Common.Models.Applications;
+using glytics.Data.Persistence;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 

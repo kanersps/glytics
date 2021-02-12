@@ -1,11 +1,9 @@
 ﻿using System;
-using System.Diagnostics;
-using System.Linq;
 using System.Threading.Tasks;
-using glytics.Models;
+using glytics.Common.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace glytics.Persistence
+namespace glytics.Data.Persistence
 {
     public class Authentication
     {

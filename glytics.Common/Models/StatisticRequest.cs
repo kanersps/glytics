@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace glytics.Models
+namespace glytics.Common.Models
 {
     public class StatisticRequest
     {

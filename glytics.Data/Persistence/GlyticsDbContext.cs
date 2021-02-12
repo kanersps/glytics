@@ -1,7 +1,8 @@
-﻿using glytics.Models;
+﻿using glytics.Common.Models;
+using glytics.Common.Models.Applications;
 using Microsoft.EntityFrameworkCore;
 
-namespace glytics.Persistence
+namespace glytics.Data.Persistence
 {
     public class GlyticsDbContext : DbContext
     {

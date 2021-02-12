@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using glytics.Common.Models.Applications;
 
-namespace glytics.Models
+namespace glytics.Common.Models
 {
     public class Account
     {

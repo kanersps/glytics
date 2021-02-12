@@ -22,7 +22,8 @@
                 Id: id,
                 Timezone: new Date().getTimezoneOffset(),
                 Sent: `/Date(${new Date().getTime()})/`,
-                Unique: IsUnique
+                Unique: IsUnique,
+                Path: window.location.pathname
             })
         }).then(r => {})
     }

@@ -31,31 +31,50 @@ namespace glytics.Controllers
             if (request.Type != "view")
                 return new BadRequestResult();
             
-            Application site = _db.Application.Include(app => app.Statistic).FirstOrDefault(app => app.TrackingCode == request.Id);
+            Application site = await _db.Application.Include(app => app.Statistic).Include(app => app.PathStatistic).AsSplitQuery().OrderBy(a => a.Active).SingleAsync(app => app.TrackingCode == request.Id);
 
             if (site == null)
                 return new BadRequestResult();
             
+            Console.WriteLine(request.Path);
+            
             ApplicationStatistic thisHour = site.Statistic.FirstOrDefault(stat => stat.Timestamp == RoundTimeHour(request.Sent));
+            ApplicationStatisticPath thisHourPage = site.PathStatistic.FirstOrDefault(stat => stat.Timestamp == RoundTimeHour(request.Sent) && stat.Path == request.Path);
 
             if (thisHour == null)
             {
                 thisHour = new ApplicationStatistic()
                 {
-                    PageViews = 1,
-                    Visits = 1,
+                    PageViews = 0,
+                    Visits = 0,
                     Timestamp = RoundTimeHour(request.Sent)
                 };
                 
                 site.Statistic.Add(thisHour);
             }
-            else
-            {
-                thisHour.PageViews++;
+            
+            thisHour.PageViews++;
                 
-                if(request.Unique)
-                    thisHour.Visits++;
+            if(request.Unique)
+                thisHour.Visits++;
+
+            if (thisHourPage == null)
+            {
+                thisHourPage = new ApplicationStatisticPath()
+                {
+                    PageViews = 0,
+                    Visits = 0,
+                    Timestamp = RoundTimeHour(request.Sent),
+                    Path = request.Path
+                };
+                
+                site.PathStatistic.Add(thisHourPage);
             }
+            
+            thisHourPage.PageViews++;
+                
+            if(request.Unique)
+                thisHourPage.Visits++;
             
             await _db.SaveChangesAsync();
             

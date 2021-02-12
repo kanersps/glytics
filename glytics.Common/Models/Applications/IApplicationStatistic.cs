@@ -1,12 +1,9 @@
 ﻿using System;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
 
 namespace glytics.Common.Models.Applications
 {
-    public class ApplicationStatistic : IApplicationStatistic
+    public interface IApplicationStatistic
     {
-        [Key]
         public Guid Id { get; set; }
         public DateTime Timestamp { get; set; }
         public int Visits { get; set; }

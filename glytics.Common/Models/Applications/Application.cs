@@ -19,5 +19,6 @@ namespace glytics.Common.Models.Applications
         public Account Account { get; set; }
         
         public List<ApplicationStatistic> Statistic { get; set; }
+        public List<ApplicationStatisticPath> PathStatistic { get; set; }
     }
 }

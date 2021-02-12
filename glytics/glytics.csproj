@@ -22,8 +22,4 @@
       <ProjectReference Include="..\glytics.Data\glytics.Data.csproj" />
     </ItemGroup>
 
-    <ItemGroup>
-      <Folder Include="Models" />
-    </ItemGroup>
-
 </Project>

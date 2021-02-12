@@ -9,5 +9,6 @@ namespace glytics.Common.Models
         public string Timezone { get; set; }
         public DateTime Sent { get; set; }
         public bool Unique { get; set; }
+        public string Path { get; set; }
     }
 }

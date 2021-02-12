@@ -11,6 +11,7 @@ namespace glytics.Data.Persistence
         
         public DbSet<Application> Application { get; set; }
         public DbSet<ApplicationStatistic> Statistic { get; set; }
+        public DbSet<ApplicationStatisticPath> StatisticPath { get; set; }
         
         public GlyticsDbContext(DbContextOptions options) : base(options) {}
 

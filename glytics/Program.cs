@@ -20,7 +20,6 @@ namespace glytics
             Host.CreateDefaultBuilder(args)
                 .ConfigureWebHostDefaults(webBuilder => { webBuilder.UseStartup<Startup>();
                     webBuilder.UseUrls(urls: "http://*:5000");
-                    webBuilder.UseWebRoot(".\\wwwroot");
                 });
     }
 }

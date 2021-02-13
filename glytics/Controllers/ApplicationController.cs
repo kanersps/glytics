@@ -39,7 +39,7 @@ namespace glytics.Controllers
         {
             string url = "https://localhost:5001";
 
-            if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("API_URL")))
+            if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("API_URL")))
                 url = Environment.GetEnvironmentVariable("API_URL");
             
             return $"<script src=\"{url}/analytics.js\"></script>\n<script>\n\tgl(\"" + id + "\").send('view')\n</script>";

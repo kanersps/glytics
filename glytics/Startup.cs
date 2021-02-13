@@ -27,9 +27,21 @@ namespace glytics
                 .AddNewtonsoftJson( options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
             services.AddSwaggerGen(c => { c.SwaggerDoc("v1", new OpenApiInfo {Title = "glytics", Version = "v1"}); });
 
-            services.AddScoped<Authentication>().AddDbContext<GlyticsDbContext>(options => options
-                .UseMySql(Configuration.GetConnectionString("home"), new MariaDbServerVersion(new Version(10, 5, 8)), mariadbOptions => mariadbOptions.CharSetBehavior(CharSetBehavior.NeverAppend)));
-
+            services.AddScoped<Authentication>().AddDbContext<GlyticsDbContext>(options =>
+            {
+                string connectionString = Environment.GetEnvironmentVariable("connection_string");
+                if (string.IsNullOrEmpty(connectionString))
+                    connectionString = Configuration.GetConnectionString("home");
+                
+                options
+                    .UseMySql(Configuration.GetConnectionString("home"),
+                        new MariaDbServerVersion(new Version(10, 5, 8)),
+                        mariadbOptions =>
+                        {
+                            mariadbOptions.CharSetBehavior(CharSetBehavior.NeverAppend);
+                            mariadbOptions.MigrationsAssembly("glytics.Data");
+                        });
+            });
 
             services.AddDbContext<GlyticsDbContext>(options =>
             {
@@ -38,15 +50,13 @@ namespace glytics
                     connectionString = Configuration.GetConnectionString("home");
                 
                 options
-                    .UseMySql(connectionString,
+                    .UseMySql(Configuration.GetConnectionString("home"),
                         new MariaDbServerVersion(new Version(10, 5, 8)),
                         mariadbOptions =>
                         {
                             mariadbOptions.CharSetBehavior(CharSetBehavior.NeverAppend);
                             mariadbOptions.MigrationsAssembly("glytics.Data");
                         });
-                
-                
             });
         }
 

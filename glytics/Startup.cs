@@ -33,8 +33,12 @@ namespace glytics
 
             services.AddDbContext<GlyticsDbContext>(options =>
             {
+                string connectionString = Environment.GetEnvironmentVariable("connection_string");
+                if (string.IsNullOrEmpty(connectionString))
+                    connectionString = Configuration.GetConnectionString("home");
+                
                 options
-                    .UseMySql(Configuration.GetConnectionString("home"),
+                    .UseMySql(connectionString,
                         new MariaDbServerVersion(new Version(10, 5, 8)),
                         mariadbOptions =>
                         {

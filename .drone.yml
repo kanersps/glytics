@@ -10,6 +10,7 @@ steps:
   - name: push-image
     image: plugins/docker
     settings:
+      repo: glytics
       username:
         from_secret: docker_name
       password:

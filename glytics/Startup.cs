@@ -34,7 +34,7 @@ namespace glytics
                     connectionString = Configuration.GetConnectionString("home");
                 
                 options
-                    .UseMySql(Configuration.GetConnectionString("home"),
+                    .UseMySql(connectionString,
                         new MariaDbServerVersion(new Version(10, 5, 8)),
                         mariadbOptions =>
                         {
@@ -50,7 +50,7 @@ namespace glytics
                     connectionString = Configuration.GetConnectionString("home");
                 
                 options
-                    .UseMySql(Configuration.GetConnectionString("home"),
+                    .UseMySql(connectionString,
                         new MariaDbServerVersion(new Version(10, 5, 8)),
                         mariadbOptions =>
                         {

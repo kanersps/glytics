@@ -15,3 +15,25 @@ steps:
         from_secret: docker_name
       password:
         from_secret: docker_secret
+  - name: deploy-image
+    image: appleboy/drone-ssh
+    environment:
+      DB_CONNECTION: 
+        from_secret: connection_string
+    settings:
+      host:
+        from_secret: ssh_address
+      username:
+        from_secret: ssh_username
+      key:
+        from_secret: ssh_key
+      port:
+        from_secret: ssh_port
+      secrets:
+        - DB_CONNECTION
+      envs: [DB_CONNECTION]
+      script:
+        - export connection_string=$DB_CONNECTION
+        - docker stop glytics && docker rm glytics
+        - docker pull kaners/glytics 
+        - docker run -d -p 30011:5000 -p 30012:5001 --env connection_string -e API_URL=https://app.g-lytics.com --name glytics kaners/glytics:latest

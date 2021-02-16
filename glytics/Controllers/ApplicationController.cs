@@ -45,6 +45,38 @@ namespace glytics.Controllers
             return $"<script src=\"{url}/analytics.js\"></script>\n<script>\n\tgl(\"" + id + "\").send('view')\n</script>";
         }
 
+        [HttpPost("application/search")]
+        public async Task<ActionResult<SearchResults>> Search(SearchRequest searchRequest)
+        {
+            APIKey key = await _apiHandler.Authorized(Request.Headers["key"]);
+            
+            if (key == null)
+                return new UnauthorizedResult();
+
+            List<Application> applications = new List<Application>();
+
+            if (searchRequest.Term.Length > 1)
+            {
+                applications = _db.Application.Where(app => app.Account.Id == key.Account.Id && app.Name.ToLower().Contains(searchRequest.Term)).ToList();
+            }
+
+            SearchResults results = new SearchResults()
+            {
+                Results = new List<SearchResult>()
+            };
+            
+            foreach (Application application in applications)
+            {
+                results.Results.Add(new SearchResult()
+                {
+                    Title = application.Name,
+                    Location = $"/applications/website/{application.TrackingCode}"
+                });
+            }
+
+            return results;
+        }
+
         public class TrackingCode
         {
             public string trackingCode { get; set; }

@@ -20,5 +20,6 @@ namespace glytics.Common.Models.Applications
         
         public List<ApplicationStatistic> Statistic { get; set; }
         public List<ApplicationStatisticPath> PathStatistic { get; set; }
+        public List<ApplicationStatisticBrowser> BrowserStatistic { get; set; }
     }
 }

@@ -62,13 +62,14 @@ namespace glytics.Controllers
             
             if (account != null)
             {
-                Application web = _db.Application.Include(app => app.Statistic).Include(app => app.PathStatistic).AsSplitQuery().OrderBy(a => a.Active).FirstOrDefault(w => w.TrackingCode == trackingCode.trackingCode);
+                Application web = _db.Application.Include(app => app.BrowserStatistic).Include(app => app.Statistic).Include(app => app.PathStatistic).AsSplitQuery().OrderBy(a => a.Active).FirstOrDefault(w => w.TrackingCode == trackingCode.trackingCode);
 
                 if (web == null)
                     return NotFound();
 
                 var hourly = new List<ApplicationStatistic>();
                 var hourlyPath = new List<ApplicationStatisticPath>();
+                var hourlyBrowser = new List<ApplicationStatisticBrowser>();
 
                 if (web.Statistic.Count > 0)
                 {
@@ -77,6 +78,9 @@ namespace glytics.Controllers
                     
                     List<ApplicationStatisticPath> lastMonthPaths =
                         web.PathStatistic.OrderByDescending(stat => stat.Timestamp).Take(30 * 24).ToList();
+                    
+                    List<ApplicationStatisticBrowser> lastMonthBrowsers =
+                        web.BrowserStatistic.OrderByDescending(stat => stat.Timestamp).Take(30 * 24).ToList();
 
                     foreach (ApplicationStatistic stat in lastMonth)
                     {
@@ -87,6 +91,11 @@ namespace glytics.Controllers
                     {
                         hourlyPath.Add(stat);
                     }
+                    
+                    foreach (ApplicationStatisticBrowser stat in lastMonthBrowsers)
+                    {
+                        hourlyBrowser.Add(stat);
+                    }
                 }
 
                 return new WebsiteDetails()
@@ -94,7 +103,8 @@ namespace glytics.Controllers
                     Address = $"https://{web.Address}",
                     Name = web.Name,
                     Hourly = hourly.Select(h => new WebsiteDetail{Timestamp = h.Timestamp, Visits = h.Visits, PageViews = h.PageViews}).ToList(),
-                    HourlyPaths = hourlyPath.Select(h => new WebsiteDetailPath{Timestamp = h.Timestamp, Visits = h.Visits, PageViews = h.PageViews, Path = h.Path}).ToList()
+                    HourlyPaths = hourlyPath.Select(h => new WebsiteDetailPath{Timestamp = h.Timestamp, Visits = h.Visits, PageViews = h.PageViews, Path = h.Path}).ToList(),
+                    HourlyBrowsers = hourlyBrowser.Select(h => new WebsiteDetailBrowser{Timestamp = h.Timestamp, Visits = h.Visits, PageViews = h.PageViews, Browser = h.Browser}).ToList()
                 };
             }
 

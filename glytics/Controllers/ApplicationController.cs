@@ -48,12 +48,20 @@ namespace glytics.Controllers
         public class TrackingCode
         {
             public string trackingCode { get; set; }
+            public long[] range { get; set; }
         }
         
         [HttpPost("application/website/details")]
         public async Task<ActionResult<WebsiteDetails>> WebsiteDetails(TrackingCode trackingCode)
         {
             APIKey key = await _apiHandler.Authorized(Request.Headers["key"]);
+
+            long[] curRange = { DateTimeOffset.UtcNow.AddDays(-30).ToUnixTimeMilliseconds(), DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() };
+
+            if (trackingCode.range.Length == 2)
+            {
+                curRange = new []{ trackingCode.range[0], trackingCode.range[1] };
+            }
 
             if (key == null)
                 return new UnauthorizedResult();
@@ -74,13 +82,13 @@ namespace glytics.Controllers
                 if (web.Statistic.Count > 0)
                 {
                     List<ApplicationStatistic> lastMonth =
-                        web.Statistic.OrderByDescending(stat => stat.Timestamp).Take(30 * 24).ToList();
+                        web.Statistic.OrderByDescending(stat => stat.Timestamp).Where(stat => stat.Timestamp > DateTimeOffset.FromUnixTimeMilliseconds(curRange[0]) && stat.Timestamp < DateTimeOffset.FromUnixTimeMilliseconds(curRange[1])).ToList();
                     
                     List<ApplicationStatisticPath> lastMonthPaths =
-                        web.PathStatistic.OrderByDescending(stat => stat.Timestamp).Take(30 * 24).ToList();
+                        web.PathStatistic.OrderByDescending(stat => stat.Timestamp).Where(stat => stat.Timestamp > DateTimeOffset.FromUnixTimeMilliseconds(curRange[0]) && stat.Timestamp < DateTimeOffset.FromUnixTimeMilliseconds(curRange[1])).ToList();
                     
                     List<ApplicationStatisticBrowser> lastMonthBrowsers =
-                        web.BrowserStatistic.OrderByDescending(stat => stat.Timestamp).Take(30 * 24).ToList();
+                        web.BrowserStatistic.OrderByDescending(stat => stat.Timestamp).Where(stat => stat.Timestamp > DateTimeOffset.FromUnixTimeMilliseconds(curRange[0]) && stat.Timestamp < DateTimeOffset.FromUnixTimeMilliseconds(curRange[1])).ToList();
 
                     foreach (ApplicationStatistic stat in lastMonth)
                     {

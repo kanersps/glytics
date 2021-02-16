@@ -1,4 +1,5 @@
 using System;
+using glytics.Data;
 using glytics.Data.Persistence;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;

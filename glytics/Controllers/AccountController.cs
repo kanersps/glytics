@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using glytics.Common.Models;
+using glytics.Data;
 using glytics.Data.Persistence;
 using Isopoh.Cryptography.Argon2;
 using Microsoft.AspNetCore.Mvc;
@@ -112,6 +113,14 @@ namespace glytics.Controllers
                     Message = "Unknown validation error"
                 };
             }
+
+            CaptchaCheck captcha = new CaptchaCheck(_account.RecaptchaToken);
+            if(!captcha.Verify())
+                return new AccountMessage()
+                {
+                    Success = false,
+                    Message = "Invalid captcha! Please refresh the page and try again."
+                };
             
             Account accountUsername = await _db.Account.FirstOrDefaultAsync(a => a.Username == _account.Username);
             Account accountEmail = await _db.Account.FirstOrDefaultAsync(a => a.Username == _account.Username);

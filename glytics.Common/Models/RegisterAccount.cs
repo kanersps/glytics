@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc;
 
 namespace glytics.Common.Models
 {
@@ -15,5 +16,8 @@ namespace glytics.Common.Models
         [Required]
         [EmailAddress]
         public string Email { get; set; }
+        
+        public string RecaptchaToken { get; set; }
+        
     }
 }

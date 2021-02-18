@@ -43,7 +43,7 @@ namespace glytics.Controllers
 
             Application site = await _db.Application.Include(app => app.Statistic).Include(app => app.BrowserStatistic).Include(app => app.PathStatistic).AsSplitQuery().OrderBy(a => a.Active).SingleAsync(app => app.TrackingCode == request.Id);
 
-            if (site == null)
+            if (site == null || site.Active == false)
                 return new BadRequestResult();
             
             ApplicationStatistic thisHour = site.Statistic.FirstOrDefault(stat => stat.Timestamp == RoundTimeHour(request.Sent));

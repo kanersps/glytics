@@ -16,21 +16,13 @@ namespace glytics.Controllers
     {
         private readonly GlyticsDbContext _db;
         private readonly IBrowserDetector _browserDetector;
+        private readonly Logic.Analytics.Web.Analytic _analytic;
 
-        public StatisticController(GlyticsDbContext dbContext, IBrowserDetector browserDetector)
+        public StatisticController(GlyticsDbContext dbContext, IBrowserDetector browserDetector, Logic.Analytics.Web.Analytic analytic)
         {
             _db = dbContext;
             _browserDetector = browserDetector;
-        }
-
-        private DateTime RoundTimeHour(DateTime time)
-        {
-            return new(time.Year, time.Month, time.Day, time.Hour, 0, 0);
-        }
-
-        private string GetBrowser(string ua)
-        {
-            return ua.Split("/")[0];
+            _analytic = analytic;
         }
         
         [HttpPost("app/web")]
@@ -45,70 +37,8 @@ namespace glytics.Controllers
 
             if (site == null || site.Active == false)
                 return new BadRequestResult();
-            
-            ApplicationStatistic thisHour = site.Statistic.FirstOrDefault(stat => stat.Timestamp == RoundTimeHour(request.Sent));
-            ApplicationStatisticPath thisHourPage = site.PathStatistic.FirstOrDefault(stat => stat.Timestamp == RoundTimeHour(request.Sent) && stat.Path == request.Path);
 
-            if (thisHour == null)
-            {
-                thisHour = new ApplicationStatistic()
-                {
-                    PageViews = 0,
-                    Visits = 0,
-                    Timestamp = RoundTimeHour(request.Sent)
-                };
-                
-                site.Statistic.Add(thisHour);
-            }
-            
-            thisHour.PageViews++;
-                
-            if(request.Unique)
-                thisHour.Visits++;
-
-            if (thisHourPage == null)
-            {
-                thisHourPage = new ApplicationStatisticPath()
-                {
-                    PageViews = 0,
-                    Visits = 0,
-                    Timestamp = RoundTimeHour(request.Sent),
-                    Path = request.Path
-                };
-                
-                site.PathStatistic.Add(thisHourPage);
-            }
-            
-            thisHourPage.PageViews++;
-                
-            if(request.Unique)
-                thisHourPage.Visits++;
-            
-            if (Request.Headers.ContainsKey("User-Agent"))
-            {
-                ApplicationStatisticBrowser thisHourBrowser = site.BrowserStatistic.FirstOrDefault(stat =>
-                    stat.Timestamp == RoundTimeHour(request.Sent) && stat.Browser == _browserDetector.Browser.Name);
-                
-                if (thisHourBrowser == null)
-                {
-                    thisHourBrowser = new ApplicationStatisticBrowser()
-                    {
-                        PageViews = 0,
-                        Visits = 0,
-                        Timestamp = RoundTimeHour(request.Sent),
-                        Browser = _browserDetector.Browser.Name
-                    };
-                
-                    site.BrowserStatistic.Add(thisHourBrowser);
-                }
-            
-                thisHourBrowser.PageViews++;
-                
-                if(request.Unique)
-                    thisHourBrowser.Visits++;
-            }
-            
-            await _db.SaveChangesAsync();
+            await _analytic.New(site, _db, request, _browserDetector.Browser, Request);
             
             return new OkResult();
         }

@@ -30,7 +30,10 @@ namespace glytics
                 .AddNewtonsoftJson( options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
             services.AddSwaggerGen(c => { c.SwaggerDoc("v1", new OpenApiInfo {Title = "glytics", Version = "v1"}); });
 
-            services.AddScoped<Authentication>().AddDbContext<GlyticsDbContext>(options =>
+            services
+                .AddScoped<Authentication>()
+                .AddScoped<Logic.Analytics.Web.Analytic>()
+                .AddDbContext<GlyticsDbContext>(options =>
             {
                 string connectionString = Environment.GetEnvironmentVariable("connection_string");
                 if (string.IsNullOrEmpty(connectionString))

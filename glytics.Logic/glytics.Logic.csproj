@@ -6,6 +6,7 @@
 
     <ItemGroup>
       <PackageReference Include="Newtonsoft.Json" Version="12.0.2" />
+      <PackageReference Include="Shyjus.BrowserDetector" Version="1.1.1" />
     </ItemGroup>
 
     <ItemGroup>

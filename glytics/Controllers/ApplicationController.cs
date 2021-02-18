@@ -8,6 +8,7 @@ using glytics.Common.Models;
 using glytics.Common.Models.Applications;
 using glytics.Data;
 using glytics.Data.Persistence;
+using glytics.Logic;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 

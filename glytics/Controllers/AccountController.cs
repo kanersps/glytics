@@ -3,6 +3,8 @@ using System.Threading.Tasks;
 using glytics.Common.Models;
 using glytics.Data;
 using glytics.Data.Persistence;
+using glytics.Logic;
+using glytics.Logic.Account;
 using Isopoh.Cryptography.Argon2;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -23,11 +25,12 @@ namespace glytics.Controllers
         [HttpGet("account")]
         public async Task<ActionResult<LoginAccount>> Account()
         {
+            GetAccount account = new GetAccount(_apiHandler);
             APIKey key = null;
             
             if (!string.IsNullOrEmpty(Request.Headers["key"]))
             {
-                key = await _apiHandler.Authorized(Request.Headers["key"]);
+                key = await account.Verify(Request.Headers["key"]);
             }
 
             if (key == null)

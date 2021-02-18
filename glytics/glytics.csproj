@@ -21,6 +21,7 @@
 
     <ItemGroup>
       <ProjectReference Include="..\glytics.Data\glytics.Data.csproj" />
+      <ProjectReference Include="..\glytics.Logic\glytics.Logic.csproj" />
     </ItemGroup>
 
 </Project>

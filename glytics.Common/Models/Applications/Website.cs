@@ -8,5 +8,7 @@ namespace glytics.Common.Models.Applications
         {
             Type = "website";
         }
+        
+        public string RecaptchaToken { get; set; }
     }
 }

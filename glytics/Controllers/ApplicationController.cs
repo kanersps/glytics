@@ -6,6 +6,7 @@ using System.Security.Cryptography;
 using System.Threading.Tasks;
 using glytics.Common.Models;
 using glytics.Common.Models.Applications;
+using glytics.Data;
 using glytics.Data.Persistence;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -294,6 +295,14 @@ namespace glytics.Controllers
         [HttpPost("application/website/create")]
         public async Task<ActionResult<ApplicationCreateMessage>> AddWebsite(Website website)
         {
+            CaptchaCheck captcha = new CaptchaCheck(website.RecaptchaToken);
+            if(!captcha.Verify())
+                return new ApplicationCreateMessage()
+                {
+                    Success = false,
+                    Message = "Invalid captcha! Please try again."
+                };
+            
             APIKey key = await _apiHandler.Authorized(Request.Headers["key"]);
 
             if (key == null)

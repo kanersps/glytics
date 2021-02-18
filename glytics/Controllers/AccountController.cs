@@ -71,6 +71,14 @@ namespace glytics.Controllers
         [HttpPost("account/login")]
         public async Task<ActionResult<AccountMessage>> AccountLogin(LoginAccount _account)
         {
+            CaptchaCheck captcha = new CaptchaCheck(_account.RecaptchaToken);
+            if(!captcha.Verify())
+                return new AccountMessage()
+                {
+                    Success = false,
+                    Message = "Invalid captcha! Please try again."
+                };
+            
             Account account = await _db.Account.FirstOrDefaultAsync(a => a.Username == _account.Username);
 
             if (account != null)

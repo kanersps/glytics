@@ -1,6 +1,8 @@
 using System;
 using glytics.Data;
 using glytics.Data.Persistence;
+using glytics.Logic.Account;
+using glytics.Middleware;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.EntityFrameworkCore;
@@ -30,8 +32,9 @@ namespace glytics
                 .AddNewtonsoftJson( options => options.SerializerSettings.ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore);
             services.AddSwaggerGen(c => { c.SwaggerDoc("v1", new OpenApiInfo {Title = "glytics", Version = "v1"}); });
 
+            services.AddScoped<AccountService>();
+            
             services
-                .AddScoped<Authentication>()
                 .AddScoped<Logic.Analytics.Web.Analytic>()
                 .AddDbContext<GlyticsDbContext>(options =>
             {
@@ -87,6 +90,8 @@ namespace glytics
                 .AllowAnyHeader()
                 .SetIsOriginAllowed(origin => true) // allow any origin
                 .AllowCredentials());
+            
+            app.UseMiddleware<JwtMiddleware>();
 
             app.UseEndpoints(endpoints => { endpoints.MapControllers(); });
         }

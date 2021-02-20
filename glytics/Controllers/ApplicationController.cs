@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
+using glytics.Common.Attributes;
 using glytics.Common.Models;
 using glytics.Common.Models.Applications;
 using glytics.Data;
@@ -18,12 +19,10 @@ namespace glytics.Controllers
     public class ApplicationController : ControllerBase
     {
         private readonly GlyticsDbContext _db;
-        private readonly Authentication _apiHandler;
         
-        public ApplicationController(GlyticsDbContext dbContext, Authentication apiHandler)
+        public ApplicationController(GlyticsDbContext dbContext)
         {
             _db = dbContext;
-            _apiHandler = apiHandler;
         }
 
         private string GenerateTrackingCode()
@@ -48,18 +47,16 @@ namespace glytics.Controllers
         }
 
         [HttpPost("application/search")]
-        public async Task<ActionResult<SearchResults>> Search(SearchRequest searchRequest)
+        [Authenticated]
+        public ActionResult<SearchResults> Search(SearchRequest searchRequest)
         {
-            APIKey key = await _apiHandler.Authorized(Request.Headers["key"]);
-            
-            if (key == null)
-                return new UnauthorizedResult();
+            Account account = (Account) HttpContext.Items["Account"];
 
             List<Application> applications = new List<Application>();
 
             if (searchRequest.Term.Length > 1)
             {
-                applications = _db.Application.Where(app => app.Account.Id == key.Account.Id && app.Name.ToLower().Contains(searchRequest.Term)).ToList();
+                applications = _db.Application.Where(app => app.Account.Id == account.Id && app.Name.ToLower().Contains(searchRequest.Term)).ToList();
             }
 
             SearchResults results = new SearchResults()
@@ -86,9 +83,10 @@ namespace glytics.Controllers
         }
         
         [HttpPost("application/website/details")]
-        public async Task<ActionResult<WebsiteDetails>> WebsiteDetails(TrackingCode trackingCode)
+        [Authenticated]
+        public ActionResult<WebsiteDetails> WebsiteDetails(TrackingCode trackingCode)
         {
-            APIKey key = await _apiHandler.Authorized(Request.Headers["key"]);
+            Account account = (Account) HttpContext.Items["Account"];
 
             long[] curRange = { DateTimeOffset.UtcNow.AddDays(-30).ToUnixTimeMilliseconds(), DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() };
 
@@ -96,11 +94,6 @@ namespace glytics.Controllers
             {
                 curRange = new []{ trackingCode.range[0], trackingCode.range[1] };
             }
-
-            if (key == null)
-                return new UnauthorizedResult();
-
-            Account account = await _db.Account.FirstOrDefaultAsync(acc => acc.Id == key.Account.Id);
             
             if (account != null)
             {
@@ -154,14 +147,10 @@ namespace glytics.Controllers
         }
         
         [HttpPost("application/website/details/simple")]
-        public async Task<ActionResult<SimpleWebsiteDetails>> WebsiteSimpleDetails(TrackingCode trackingCode)
+        [Authenticated]
+        public ActionResult<SimpleWebsiteDetails> WebsiteSimpleDetails(TrackingCode trackingCode)
         {
-            APIKey key = await _apiHandler.Authorized(Request.Headers["key"]);
-
-            if (key == null)
-                return new UnauthorizedResult();
-
-            Account account = await _db.Account.FirstOrDefaultAsync(acc => acc.Id == key.Account.Id);
+            Account account = (Account) HttpContext.Items["Account"];
             
             if (account != null)
             {
@@ -210,18 +199,14 @@ namespace glytics.Controllers
         }
         
         [HttpPost("application/website/deactivate")]
+        [Authenticated]
         public async Task<ActionResult> DeactivateWebsite(ApplicationRemove website)
         {
-            APIKey key = await _apiHandler.Authorized(Request.Headers["key"]);
-
-            if (key == null)
-                return new UnauthorizedResult();
-
-            Account account = await _db.Account.FirstOrDefaultAsync(acc => acc.Id == key.Account.Id);
+            Account account = (Account) HttpContext.Items["Account"];
 
             if (account != null)
             {
-                Application web = account.Applications.FirstOrDefault(w => w.TrackingCode == website.TrackingCode);
+                Application web = _db.Application.FirstOrDefault(w => w.TrackingCode == website.TrackingCode && w.Account.Id == account.Id);
 
                 if (web != null) web.Active = false;
 
@@ -234,18 +219,14 @@ namespace glytics.Controllers
         }
         
         [HttpPost("application/website/activate")]
+        [Authenticated]
         public async Task<ActionResult> ActivateWebsite(ApplicationRemove website)
         {
-            APIKey key = await _apiHandler.Authorized(Request.Headers["key"]);
-
-            if (key == null)
-                return new UnauthorizedResult();
-
-            Account account = await _db.Account.FirstOrDefaultAsync(acc => acc.Id == key.Account.Id);
+            Account account = (Account) HttpContext.Items["Account"];
 
             if (account != null)
             {
-                Application web = account.Applications.FirstOrDefault(w => w.TrackingCode == website.TrackingCode);
+                Application web = _db.Application.FirstOrDefault(w => w.TrackingCode == website.TrackingCode && w.Account.Id == account.Id);
 
                 if (web != null) web.Active = true;
 
@@ -258,17 +239,14 @@ namespace glytics.Controllers
         }
 
         [HttpPost("application/website/delete")]
+        [Authenticated]
         public async Task<ActionResult> DeleteWebsite(ApplicationRemove website)
         {
-            APIKey key = await _apiHandler.Authorized(Request.Headers["key"]);
-
-            if (key == null)
-                return new UnauthorizedResult();
-
-            Account account = await _db.Account.FirstOrDefaultAsync(acc => acc.Id == key.Account.Id);
+            Account account = (Account) HttpContext.Items["Account"];
+            
             if (account != null)
             {
-                Application web = account.Applications.FirstOrDefault(w => w.TrackingCode == website.TrackingCode);
+                Application web = _db.Application.FirstOrDefault(w => w.TrackingCode == website.TrackingCode && w.Account.Id == account.Id);
 
                 _db.Application.Remove(web!);
                 
@@ -281,19 +259,16 @@ namespace glytics.Controllers
         }
 
         [HttpGet("application/website/all")]
+        [Authenticated]
         public async Task<ActionResult<IList>> GetWebsites()
         {
-            APIKey key = await _apiHandler.Authorized(Request.Headers["key"]);
+            Account account = await _db.Account.Include(acc => acc.Applications).FirstOrDefaultAsync(acc => acc.Id == ((Account) HttpContext.Items["Account"]).Id);
 
-            if (key == null)
-                return new UnauthorizedResult();
-            
-            
-
-            return key.Account.Applications.Select(app => new {app.Address, app.Name, app.TrackingCode, app.Active}).ToList();
+            return account?.Applications.Select(app => new {app.Address, app.Name, app.TrackingCode, app.Active}).ToList();
         }
         
         [HttpPost("application/website/create")]
+        [Authenticated]
         public async Task<ActionResult<ApplicationCreateMessage>> AddWebsite(Website website)
         {
             CaptchaCheck captcha = new CaptchaCheck(website.RecaptchaToken);
@@ -304,14 +279,11 @@ namespace glytics.Controllers
                     Message = "Invalid captcha! Please try again."
                 };
             
-            APIKey key = await _apiHandler.Authorized(Request.Headers["key"]);
-
-            if (key == null)
-                return new UnauthorizedResult();
+            Account _account = (Account) HttpContext.Items["Account"];
             
             if (ModelState.IsValid)
             {
-                Account account = await _db.Account.Include(a => a.Applications).FirstOrDefaultAsync(u => u.Id == key.Account.Id);
+                Account account = await _db.Account.Include(a => a.Applications).FirstOrDefaultAsync(u => u.Id == _account.Id);
 
                 Application application = account.Applications.FirstOrDefault(app => app.Address == website.Address);
 

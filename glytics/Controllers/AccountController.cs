@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
+using glytics.Common.Attributes;
 using glytics.Common.Models;
+using glytics.Common.Models.Auth;
 using glytics.Data;
 using glytics.Data.Persistence;
 using glytics.Logic;
@@ -15,55 +17,30 @@ namespace glytics.Controllers
     public class AccountController : ControllerBase
     {
         private readonly GlyticsDbContext _db;
-        private readonly Authentication _apiHandler;
-        public AccountController(GlyticsDbContext dbContext, Authentication apiHandler)
+        private readonly AccountService _accountService;
+        public AccountController(GlyticsDbContext dbContext, AccountService accountService)
         {
             _db = dbContext;
-            _apiHandler = apiHandler;
+            _accountService = accountService;
         }
 
         [HttpGet("account")]
-        public async Task<ActionResult<LoginAccount>> Account()
+        [Authenticated]
+        public ActionResult<LoginAccount> Account()
         {
-            GetAccount account = new GetAccount(_apiHandler);
-            APIKey key = null;
-            
-            if (!string.IsNullOrEmpty(Request.Headers["key"]))
-            {
-                key = await account.Verify(Request.Headers["key"]);
-            }
-
-            if (key == null)
-            {
-                return new UnauthorizedResult();
-            }
+            Account account = (Account) HttpContext.Items["Account"];
 
             return new LoginAccount()
             {
-                Username = key.Account.Username,
-                Password = key.Account.Password,
+                Username = account?.Username,
+                Password = account?.Password,
             };
         }
         
         [HttpGet("account/authenticated")]
-        public async Task<ActionResult<AccountMessage>> AccountAuthenticated()
+        [Authenticated]
+        public ActionResult<AccountMessage> AccountAuthenticated()
         {
-            APIKey key = null;
-            
-            if (!string.IsNullOrEmpty(Request.Headers["key"]))
-            {
-                key = await _apiHandler.Authorized(Request.Headers["key"]);
-            }
-
-            if (key == null)
-            {
-                return new AccountMessage()
-                {
-                    Success = false,
-                    Message = "This key is not authenticated"
-                };
-            }
-
             return new AccountMessage()
             {
                 Success = true,
@@ -72,45 +49,17 @@ namespace glytics.Controllers
         }
         
         [HttpPost("account/login")]
-        public async Task<ActionResult<AccountMessage>> AccountLogin(LoginAccount _account)
+        public async Task<ActionResult<AuthenticationResponse>> AccountLogin(LoginAccount account)
         {
-            CaptchaCheck captcha = new CaptchaCheck(_account.RecaptchaToken);
+            CaptchaCheck captcha = new CaptchaCheck(account.RecaptchaToken);
             if(!captcha.Verify())
-                return new AccountMessage()
+                return new AuthenticationResponse()
                 {
                     Success = false,
                     Message = "Invalid captcha! Please try again."
                 };
-            
-            Account account = await _db.Account.FirstOrDefaultAsync(a => a.Username == _account.Username);
 
-            if (account != null)
-            {
-                if (Argon2.Verify(account.Password, _account.Password))
-                {
-                    Guid key = await _apiHandler.Get(account.Id);
-                    
-                    return new AccountMessage()
-                    {
-                        Success = true,
-                        Message = key.ToString()
-                    };
-                }
-                else
-                {
-                    return new AccountMessage()
-                    {
-                        Success = false,
-                        Message = "Invalid username and/or password"
-                    };
-                }
-            }
-            
-            return new AccountMessage()
-            {
-                Success = false,
-                Message = "Invalid username and/or password"
-            };
+            return await _accountService.Authenticate(account);
         }
         
         [HttpPost("account/register")]

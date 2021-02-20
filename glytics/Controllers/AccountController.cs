@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
-using glytics.Common.Attributes;
+using glytics.Attributes;
 using glytics.Common.Models;
 using glytics.Common.Models.Auth;
 using glytics.Data;

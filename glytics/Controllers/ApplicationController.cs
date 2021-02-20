@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
-using glytics.Common.Attributes;
+using glytics.Attributes;
 using glytics.Common.Models;
 using glytics.Common.Models.Applications;
 using glytics.Data;

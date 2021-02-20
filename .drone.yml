@@ -22,6 +22,8 @@ steps:
         from_secret: connection_string
       RECAPTCHA:
         from_secret: recaptcha
+      JWT_SECRET:
+        from_secret: glytics_secret
     settings:
       host:
         from_secret: ssh_address
@@ -34,10 +36,12 @@ steps:
       secrets:
         - DB_CONNECTION
         - RECAPTCHA
-      envs: [DB_CONNECTION, RECAPTCHA]
+        - JWT_SECRET
+      envs: [DB_CONNECTION, RECAPTCHA, JWT_SECRET]
       script:
         - export connection_string=$DB_CONNECTION
         - export recaptcha_glytics=$RECAPTCHA
+        - export GLYTICS_SECRET=$JWT_SECRET
         - docker stop glytics && docker rm glytics
         - docker pull kaners/glytics
-        - docker run -d -p 30011:5000 -p 30012:5001 --env connection_string --env recaptcha_glytics -e API_URL=https://app.g-lytics.com --name glytics kaners/glytics:latest
+        - docker run -d -p 30011:5000 -p 30012:5001 --env GLYTICS_SECRET --env connection_string --env recaptcha_glytics -e API_URL=https://app.g-lytics.com --name glytics kaners/glytics:latest

@@ -10,6 +10,7 @@ using glytics.Common.Models.Applications;
 using glytics.Data;
 using glytics.Data.Persistence;
 using glytics.Logic;
+using glytics.Logic.Analytics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -19,10 +20,12 @@ namespace glytics.Controllers
     public class ApplicationController : ControllerBase
     {
         private readonly GlyticsDbContext _db;
+        private readonly ApplicationService _app;
         
-        public ApplicationController(GlyticsDbContext dbContext)
+        public ApplicationController(GlyticsDbContext dbContext, ApplicationService app)
         {
             _db = dbContext;
+            _app = app;
         }
 
         private string GenerateTrackingCode()
@@ -97,50 +100,7 @@ namespace glytics.Controllers
             
             if (account != null)
             {
-                Application web = _db.Application.Include(app => app.BrowserStatistic).Include(app => app.Statistic).Include(app => app.PathStatistic).AsSplitQuery().OrderBy(a => a.Active).FirstOrDefault(w => w.TrackingCode == trackingCode.trackingCode);
-
-                if (web == null)
-                    return NotFound();
-
-                var hourly = new List<ApplicationStatistic>();
-                var hourlyPath = new List<ApplicationStatisticPath>();
-                var hourlyBrowser = new List<ApplicationStatisticBrowser>();
-
-                if (web.Statistic.Count > 0)
-                {
-                    List<ApplicationStatistic> lastMonth =
-                        web.Statistic.OrderByDescending(stat => stat.Timestamp).Where(stat => stat.Timestamp > DateTimeOffset.FromUnixTimeMilliseconds(curRange[0]) && stat.Timestamp < DateTimeOffset.FromUnixTimeMilliseconds(curRange[1])).ToList();
-                    
-                    List<ApplicationStatisticPath> lastMonthPaths =
-                        web.PathStatistic.OrderByDescending(stat => stat.Timestamp).Where(stat => stat.Timestamp > DateTimeOffset.FromUnixTimeMilliseconds(curRange[0]) && stat.Timestamp < DateTimeOffset.FromUnixTimeMilliseconds(curRange[1])).ToList();
-                    
-                    List<ApplicationStatisticBrowser> lastMonthBrowsers =
-                        web.BrowserStatistic.OrderByDescending(stat => stat.Timestamp).Where(stat => stat.Timestamp > DateTimeOffset.FromUnixTimeMilliseconds(curRange[0]) && stat.Timestamp < DateTimeOffset.FromUnixTimeMilliseconds(curRange[1])).ToList();
-
-                    foreach (ApplicationStatistic stat in lastMonth)
-                    {
-                        hourly.Add(stat);
-                    }
-                    
-                    foreach (ApplicationStatisticPath stat in lastMonthPaths)
-                    {
-                        hourlyPath.Add(stat);
-                    }
-                    
-                    foreach (ApplicationStatisticBrowser stat in lastMonthBrowsers)
-                    {
-                        hourlyBrowser.Add(stat);
-                    }
-                }
-
-                return new WebsiteDetails()
-                {
-                    Address = $"https://{web.Address}",
-                    Name = web.Name,
-                    Hourly = hourly.Select(h => new WebsiteDetail{Timestamp = h.Timestamp, Visits = h.Visits, PageViews = h.PageViews}).ToList(),
-                    HourlyPaths = hourlyPath.Select(h => new WebsiteDetailPath{Timestamp = h.Timestamp, Visits = h.Visits, PageViews = h.PageViews, Path = h.Path}).ToList(),
-                    HourlyBrowsers = hourlyBrowser.Select(h => new WebsiteDetailBrowser{Timestamp = h.Timestamp, Visits = h.Visits, PageViews = h.PageViews, Browser = h.Browser}).ToList()
-                };
+                return _app.GetWebsiteDetails(_db, curRange, trackingCode.trackingCode);
             }
 
             return new UnauthorizedResult();

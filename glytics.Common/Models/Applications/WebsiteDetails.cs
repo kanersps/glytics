@@ -25,9 +25,9 @@ namespace glytics.Common.Models.Applications
     }
     public class WebsiteDetails : IWebsiteDetail
     {
-        public List<WebsiteDetail> Hourly { get; set; }
-        public List<WebsiteDetailPath> HourlyPaths { get; set; }
-        public List<WebsiteDetailBrowser> HourlyBrowsers { get; set; }
+        public List<long[]> Hourly { get; set; }
+        public List<dynamic[]> HourlyPaths { get; set; }
+        public List<dynamic[]> HourlyBrowsers { get; set; }
         public string Name { get; set; }
         public string Address { get; set; }
     }

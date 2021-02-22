@@ -2,6 +2,7 @@ using System;
 using glytics.Data;
 using glytics.Data.Persistence;
 using glytics.Logic.Account;
+using glytics.Logic.Analytics;
 using glytics.Middleware;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -33,6 +34,7 @@ namespace glytics
             services.AddSwaggerGen(c => { c.SwaggerDoc("v1", new OpenApiInfo {Title = "glytics", Version = "v1"}); });
 
             services.AddScoped<AccountService>();
+            services.AddScoped<ApplicationService>();
             
             services
                 .AddScoped<Logic.Analytics.Web.Analytic>()

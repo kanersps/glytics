@@ -28,7 +28,7 @@ namespace glytics.Controllers
         [HttpPost("app/web")]
         public async Task<ActionResult> HandleStatisticRequest(StatisticRequest request)
         {
-            request.Sent = DateTime.Now;
+            request.Sent = DateTime.Now.ToUniversalTime();
 
             if (request.Type != "view")
                 return new BadRequestResult();

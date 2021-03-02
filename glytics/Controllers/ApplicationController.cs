@@ -80,18 +80,14 @@ namespace glytics.Controllers
         {
             Account account = (Account) HttpContext.Items["Account"];
 
-            if (account != null)
+            if (await _app.Deactivate(account, website))
             {
-                Application web = _db.Application.FirstOrDefault(w => w.TrackingCode == website.TrackingCode && w.Account.Id == account.Id);
-
-                if (web != null) web.Active = false;
-
-                await _db.SaveChangesAsync();
-                
                 return new OkResult();
             }
-
-            return new BadRequestResult();
+            else
+            {
+                return new BadRequestResult();
+            }
         }
         
         [HttpPost("application/website/activate")]
@@ -100,18 +96,14 @@ namespace glytics.Controllers
         {
             Account account = (Account) HttpContext.Items["Account"];
 
-            if (account != null)
+            if (await _app.Activate(account, website))
             {
-                Application web = _db.Application.FirstOrDefault(w => w.TrackingCode == website.TrackingCode && w.Account.Id == account.Id);
-
-                if (web != null) web.Active = true;
-
-                await _db.SaveChangesAsync();
-                
                 return new OkResult();
             }
-
-            return new BadRequestResult();
+            else
+            {
+                return new BadRequestResult();
+            }
         }
 
         [HttpPost("application/website/delete")]

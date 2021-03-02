@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using glytics.Common.Models.Applications;
 using glytics.Data.Persistence;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace glytics.Logic.Application
@@ -159,6 +160,42 @@ namespace glytics.Logic.Application
             }
 
             return results;
+        }
+
+        public async Task<bool> Deactivate(Common.Models.Account account, ApplicationRemove website)
+        {
+            Common.Models.Applications.Application web = _dbContext.Application.FirstOrDefault(w => w.TrackingCode == website.TrackingCode && w.Account.Id == account.Id);
+
+            if (web != null)
+            {
+                web.Active = false;
+                
+                await _dbContext.SaveChangesAsync();
+                    
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        
+        public async Task<bool> Activate(Common.Models.Account account, ApplicationRemove website)
+        {
+            Common.Models.Applications.Application web = _dbContext.Application.FirstOrDefault(w => w.TrackingCode == website.TrackingCode && w.Account.Id == account.Id);
+
+            if (web != null)
+            {
+                web.Active = true;
+                
+                await _dbContext.SaveChangesAsync();
+
+                return true;
+            }
+            else
+            {
+                return false;
+            }
         }
     }
 }

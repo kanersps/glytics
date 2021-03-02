@@ -112,14 +112,8 @@ namespace glytics.Controllers
         {
             Account account = (Account) HttpContext.Items["Account"];
             
-            if (account != null)
+            if (await _app.Delete(account, website))
             {
-                Application web = _db.Application.FirstOrDefault(w => w.TrackingCode == website.TrackingCode && w.Account.Id == account.Id);
-
-                _db.Application.Remove(web!);
-                
-                await _db.SaveChangesAsync();
-                
                 return new OkResult();
             }
 
@@ -130,9 +124,7 @@ namespace glytics.Controllers
         [Authenticated]
         public async Task<ActionResult<IList>> GetWebsites()
         {
-            Account account = await _db.Account.Include(acc => acc.Applications).FirstOrDefaultAsync(acc => acc.Id == ((Account) HttpContext.Items["Account"]).Id);
-
-            return account?.Applications.Select(app => new {app.Address, app.Name, app.TrackingCode, app.Active}).ToList();
+            return await _app.GetWebsites(((Account) HttpContext.Items["Account"]));
         }
         
         [HttpPost("application/website/create")]

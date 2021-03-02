@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -196,6 +197,25 @@ namespace glytics.Logic.Application
             {
                 return false;
             }
+        }
+
+        public async Task<bool> Delete(Common.Models.Account account, ApplicationRemove website)
+        {
+            Common.Models.Applications.Application web = _dbContext.Application.FirstOrDefault(w => w.TrackingCode == website.TrackingCode && w.Account.Id == account.Id);
+
+            if (web == null)
+                return false;
+            
+            _dbContext.Application.Remove(web);
+                
+            await _dbContext.SaveChangesAsync();
+
+            return true;
+        }
+
+        public async Task<ActionResult<IList>> GetWebsites(Common.Models.Account account)
+        {
+            return account.Applications.Select(app => new {app.Address, app.Name, app.TrackingCode, app.Active}).ToList();
         }
     }
 }

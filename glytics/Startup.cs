@@ -2,7 +2,8 @@ using System;
 using glytics.Data;
 using glytics.Data.Persistence;
 using glytics.Logic.Account;
-using glytics.Logic.Analytics;
+using glytics.Logic.Application;
+using glytics.Logic.Application.Web;
 using glytics.Middleware;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -37,7 +38,7 @@ namespace glytics
             services.AddScoped<ApplicationService>();
             
             services
-                .AddScoped<Logic.Analytics.Web.Analytic>()
+                .AddScoped<Analytic>()
                 .AddDbContext<GlyticsDbContext>(options =>
             {
                 string connectionString = Environment.GetEnvironmentVariable("connection_string");

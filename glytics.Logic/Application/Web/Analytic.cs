@@ -1,20 +1,16 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net.Http.Headers;
+﻿using System.Linq;
 using System.Threading.Tasks;
 using glytics.Common.Models;
 using glytics.Common.Models.Applications;
 using glytics.Data.Persistence;
 using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
 using Shyjus.BrowserDetection.Browsers;
 
-namespace glytics.Logic.Analytics.Web
+namespace glytics.Logic.Application.Web
 {
     public class Analytic
     {
-        public async Task New(Application site, GlyticsDbContext db, StatisticRequest request, IBrowser browserDetector, HttpRequest httpRequest)
+        public async Task New(Common.Models.Applications.Application site, GlyticsDbContext db, StatisticRequest request, IBrowser browserDetector, HttpRequest httpRequest)
         {
             ApplicationStatistic thisHour = site.Statistic.FirstOrDefault(stat => stat.Timestamp == Utility.RoundTimeHour(request.Sent));
             ApplicationStatisticPath thisHourPage = site.PathStatistic.FirstOrDefault(stat => stat.Timestamp == Utility.RoundTimeHour(request.Sent) && stat.Path == request.Path);

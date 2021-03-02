@@ -10,7 +10,7 @@ using glytics.Common.Models.Applications;
 using glytics.Data;
 using glytics.Data.Persistence;
 using glytics.Logic;
-using glytics.Logic.Analytics;
+using glytics.Logic.Application;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -38,17 +38,7 @@ namespace glytics.Controllers
 
             return $"GL-{uniqueIDs}";
         }
-
-        private string GenerateTrackingJavascript(string id)
-        {
-            string url = "https://localhost:5001";
-
-            if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("API_URL")))
-                url = Environment.GetEnvironmentVariable("API_URL");
-            
-            return $"<script src=\"{url}/analytics.js\"></script>\n<script>\n\tgl(\"" + id + "\").send('view')\n</script>";
-        }
-
+        
         [HttpPost("application/search")]
         [Authenticated]
         public ActionResult<SearchResults> Search(SearchRequest searchRequest)
@@ -78,12 +68,6 @@ namespace glytics.Controllers
 
             return results;
         }
-
-        public class TrackingCode
-        {
-            public string trackingCode { get; set; }
-            public long[] range { get; set; }
-        }
         
         [HttpPost("application/website/details")]
         [Authenticated]
@@ -100,7 +84,7 @@ namespace glytics.Controllers
             
             if (account != null)
             {
-                return _app.GetWebsiteDetails(_db, curRange, trackingCode.trackingCode);
+                return _app.GetWebsiteDetails(curRange, trackingCode.trackingCode);
             }
 
             return new UnauthorizedResult();
@@ -108,52 +92,12 @@ namespace glytics.Controllers
         
         [HttpPost("application/website/details/simple")]
         [Authenticated]
-        public ActionResult<SimpleWebsiteDetails> WebsiteSimpleDetails(TrackingCode trackingCode)
+        public async Task<ActionResult<SimpleWebsiteDetails>> WebsiteSimpleDetails(TrackingCode trackingCode)
         {
-            Account account = (Account) HttpContext.Items["Account"];
+            SimpleWebsiteDetails result = await _app.GetWebsite(trackingCode);
             
-            if (account != null)
-            {
-                Application web = _db.Application.Include(app => app.Statistic).FirstOrDefault(w => w.TrackingCode == trackingCode.trackingCode);
-
-                if (web == null)
-                    return NotFound();
-
-                var hourlyVisitors = 0;
-                var hourlyViews = 0;
-                
-                var monthlyVisitors = 0;
-                var monthlyViews = 0;
-
-                if (web.Statistic.Count > 0)
-                {
-                    ApplicationStatistic last = web.Statistic[^1];
-
-                    hourlyVisitors = last.Visits;
-                    hourlyViews = last.PageViews;
-
-                    List<ApplicationStatistic> lastMonth =
-                        web.Statistic.OrderByDescending(stat => stat.Timestamp).Take(30 * 24).ToList();
-
-                    foreach (ApplicationStatistic stat in lastMonth)
-                    {
-                        monthlyViews += stat.PageViews;
-                        monthlyVisitors += stat.Visits;
-                    }
-
-                }
-
-                return new SimpleWebsiteDetails()
-                {
-                    Address = $"https://{web.Address}",
-                    Name = web.Name,
-                    LastHourViews = hourlyViews,
-                    LastHourVisitors = hourlyVisitors,
-                    LastMonthViews = monthlyViews,
-                    LastMonthVisitors = monthlyVisitors,
-                    TrackingSnippet = GenerateTrackingJavascript(web.TrackingCode)
-                };
-            }
+            if (result != null)
+                return result;
 
             return new UnauthorizedResult();
         }

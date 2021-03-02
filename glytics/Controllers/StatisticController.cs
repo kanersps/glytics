@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using glytics.Common.Models;
 using glytics.Common.Models.Applications;
 using glytics.Data.Persistence;
+using glytics.Logic.Application.Web;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Shyjus.BrowserDetection;
@@ -16,9 +17,9 @@ namespace glytics.Controllers
     {
         private readonly GlyticsDbContext _db;
         private readonly IBrowserDetector _browserDetector;
-        private readonly Logic.Analytics.Web.Analytic _analytic;
+        private readonly Analytic _analytic;
 
-        public StatisticController(GlyticsDbContext dbContext, IBrowserDetector browserDetector, Logic.Analytics.Web.Analytic analytic)
+        public StatisticController(GlyticsDbContext dbContext, IBrowserDetector browserDetector, Analytic analytic)
         {
             _db = dbContext;
             _browserDetector = browserDetector;

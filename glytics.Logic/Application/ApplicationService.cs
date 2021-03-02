@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using glytics.Common.Models.Applications;
 using glytics.Data.Persistence;
@@ -27,6 +28,17 @@ namespace glytics.Logic.Application
                 url = Environment.GetEnvironmentVariable("API_URL");
             
             return $"<script src=\"{url}/analytics.js\"></script>\n<script>\n\tgl(\"" + id + "\").send('view')\n</script>";
+        }
+        
+        private string GenerateTrackingCode()
+        {
+            byte[] bytes = new byte[4];
+            RandomNumberGenerator rng = RandomNumberGenerator.Create();
+            rng.GetBytes(bytes);
+
+            uint uniqueIDs = BitConverter.ToUInt32(bytes, 0) % 100000000;
+
+            return $"GL-{uniqueIDs}";
         }
         
         public WebsiteDetails GetWebsiteDetails(long[] curRange, string trackingCode)
@@ -216,6 +228,32 @@ namespace glytics.Logic.Application
         public async Task<ActionResult<IList>> GetWebsites(Common.Models.Account account)
         {
             return account.Applications.Select(app => new {app.Address, app.Name, app.TrackingCode, app.Active}).ToList();
+        }
+
+        public async Task<ApplicationCreateMessage> CreateWebsite(Common.Models.Account _account, Website website)
+        {
+            Common.Models.Account account = await _dbContext.Account.Include(a => a.Applications).FirstOrDefaultAsync(u => u.Id == _account.Id);
+
+            Common.Models.Applications.Application application = account.Applications.FirstOrDefault(app => app.Address == website.Address);
+
+            if (application == null)
+            {
+                website.TrackingCode = GenerateTrackingCode();
+                account.Applications.Add(website);
+                await _dbContext.SaveChangesAsync();
+                    
+                return new ApplicationCreateMessage()
+                {
+                    Success = true,
+                    Message = ""
+                };
+            }
+
+            return new ApplicationCreateMessage()
+            {
+                Success = false,
+                Message = "You already have an application with this address"
+            };
         }
     }
 }

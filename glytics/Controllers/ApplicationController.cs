@@ -28,17 +28,6 @@ namespace glytics.Controllers
             _app = app;
         }
 
-        private string GenerateTrackingCode()
-        {
-            byte[] bytes = new byte[4];
-            RandomNumberGenerator rng = RandomNumberGenerator.Create();
-            rng.GetBytes(bytes);
-
-            uint uniqueIDs = BitConverter.ToUInt32(bytes, 0) % 100000000;
-
-            return $"GL-{uniqueIDs}";
-        }
-        
         [HttpPost("application/search")]
         [Authenticated]
         public async Task<ActionResult<SearchResults>> Search(SearchRequest searchRequest)
@@ -139,32 +128,11 @@ namespace glytics.Controllers
                     Message = "Invalid captcha! Please try again."
                 };
             
-            Account _account = (Account) HttpContext.Items["Account"];
-            
             if (ModelState.IsValid)
             {
-                Account account = await _db.Account.Include(a => a.Applications).FirstOrDefaultAsync(u => u.Id == _account.Id);
+                Account account = (Account) HttpContext.Items["Account"];
 
-                Application application = account.Applications.FirstOrDefault(app => app.Address == website.Address);
-
-                if (application == null)
-                {
-                    website.TrackingCode = GenerateTrackingCode();
-                    account.Applications.Add(website);
-                    await _db.SaveChangesAsync();
-                    
-                    return new ApplicationCreateMessage()
-                    {
-                        Success = true,
-                        Message = ""
-                    };
-                }
-
-                return new ApplicationCreateMessage()
-                {
-                    Success = false,
-                    Message = "You already have an application with this address"
-                };
+                return await _app.CreateWebsite(account, website);
             }
             
             return new ApplicationCreateMessage()

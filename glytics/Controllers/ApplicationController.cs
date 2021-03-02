@@ -41,32 +41,11 @@ namespace glytics.Controllers
         
         [HttpPost("application/search")]
         [Authenticated]
-        public ActionResult<SearchResults> Search(SearchRequest searchRequest)
+        public async Task<ActionResult<SearchResults>> Search(SearchRequest searchRequest)
         {
             Account account = (Account) HttpContext.Items["Account"];
-
-            List<Application> applications = new List<Application>();
-
-            if (searchRequest.Term.Length > 1)
-            {
-                applications = _db.Application.Where(app => app.Account.Id == account.Id && app.Name.ToLower().Contains(searchRequest.Term)).ToList();
-            }
-
-            SearchResults results = new SearchResults()
-            {
-                Results = new List<SearchResult>()
-            };
             
-            foreach (Application application in applications)
-            {
-                results.Results.Add(new SearchResult()
-                {
-                    Title = application.Name,
-                    Location = $"/applications/website/{application.TrackingCode}"
-                });
-            }
-
-            return results;
+            return await _app.Search(account, searchRequest);
         }
         
         [HttpPost("application/website/details")]

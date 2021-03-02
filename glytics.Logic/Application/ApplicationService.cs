@@ -134,5 +134,31 @@ namespace glytics.Logic.Application
                 TrackingSnippet = GenerateTrackingJavascript(web.TrackingCode)
             };
         }
+
+        public async Task<SearchResults> Search(Common.Models.Account account, SearchRequest searchRequest)
+        {
+            List<Common.Models.Applications.Application> applications = new List<Common.Models.Applications.Application>();
+
+            if (searchRequest.Term.Length > 1)
+            {
+                applications = _dbContext.Application.Where(app => app.Account.Id == account.Id && app.Name.ToLower().Contains(searchRequest.Term)).ToList();
+            }
+
+            SearchResults results = new SearchResults()
+            {
+                Results = new List<SearchResult>()
+            };
+            
+            foreach (Common.Models.Applications.Application application in applications)
+            {
+                results.Results.Add(new SearchResult()
+                {
+                    Title = application.Name,
+                    Location = $"/applications/website/{application.TrackingCode}"
+                });
+            }
+
+            return results;
+        }
     }
 }

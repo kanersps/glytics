@@ -63,7 +63,7 @@ namespace glytics.Controllers
         }
         
         [HttpPost("account/register")]
-        public async Task<ActionResult<AccountMessage>> AccountRegister(RegisterAccount _account)
+        public async Task<ActionResult<AccountMessage>> AccountRegister(RegisterAccount account)
         {
             if (!ModelState.IsValid)
             {
@@ -74,48 +74,15 @@ namespace glytics.Controllers
                 };
             }
 
-            CaptchaCheck captcha = new CaptchaCheck(_account.RecaptchaToken);
+            CaptchaCheck captcha = new CaptchaCheck(account.RecaptchaToken);
             if(!captcha.Verify())
                 return new AccountMessage()
                 {
                     Success = false,
                     Message = "Invalid captcha! Please refresh the page and try again."
                 };
-            
-            Account accountUsername = await _db.Account.FirstOrDefaultAsync(a => a.Username == _account.Username);
-            Account accountEmail = await _db.Account.FirstOrDefaultAsync(a => a.Username == _account.Username);
 
-            if (accountUsername != null)
-            {
-                return new AccountMessage()
-                {
-                    Success = false,
-                    Message = "Username is already in use"
-                };
-            }
-            
-            if (accountEmail != null)
-            {
-                return new AccountMessage()
-                {
-                    Success = false,
-                    Message = "E-Mail is already in use"
-                };
-            }
-
-            await _db.Account.AddAsync(new Account()
-            {
-                Username = _account.Username,
-                Password = Argon2.Hash(_account.Password)
-            });
-            
-            await _db.SaveChangesAsync();
-            
-            return new AccountMessage()
-            {
-                Success = true,
-                Message = ""
-            };
+            return await _accountService.Register(account);
         }
     }
 }

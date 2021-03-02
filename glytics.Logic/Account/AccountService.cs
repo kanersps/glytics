@@ -68,5 +68,43 @@ namespace glytics.Logic.Account
                 Message = "Invalid username and/or password"
             };
         }
+
+        public async Task<AccountMessage> Register(RegisterAccount _account)
+        {
+            Common.Models.Account accountUsername = await _dbContext.Account.FirstOrDefaultAsync(a => a.Username == _account.Username);
+            Common.Models.Account accountEmail = await _dbContext.Account.FirstOrDefaultAsync(a => a.Username == _account.Username);
+
+            if (accountUsername != null)
+            {
+                return new AccountMessage()
+                {
+                    Success = false,
+                    Message = "Username is already in use"
+                };
+            }
+            
+            if (accountEmail != null)
+            {
+                return new AccountMessage()
+                {
+                    Success = false,
+                    Message = "E-Mail is already in use"
+                };
+            }
+
+            await _dbContext.Account.AddAsync(new Common.Models.Account()
+            {
+                Username = _account.Username,
+                Password = Argon2.Hash(_account.Password)
+            });
+            
+            await _dbContext.SaveChangesAsync();
+            
+            return new AccountMessage()
+            {
+                Success = true,
+                Message = ""
+            };
+        }
     }
 }

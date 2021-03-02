@@ -73,8 +73,6 @@ namespace glytics.Controllers
         [Authenticated]
         public ActionResult<WebsiteDetails> WebsiteDetails(TrackingCode trackingCode)
         {
-            Account account = (Account) HttpContext.Items["Account"];
-
             long[] curRange = { DateTimeOffset.UtcNow.AddDays(-30).ToUnixTimeMilliseconds(), DateTimeOffset.UtcNow.ToUnixTimeMilliseconds() };
 
             if (trackingCode.range.Length == 2)
@@ -82,12 +80,7 @@ namespace glytics.Controllers
                 curRange = new []{ trackingCode.range[0], trackingCode.range[1] };
             }
             
-            if (account != null)
-            {
-                return _app.GetWebsiteDetails(curRange, trackingCode.trackingCode);
-            }
-
-            return new UnauthorizedResult();
+            return _app.GetWebsiteDetails(curRange, trackingCode.trackingCode);
         }
         
         [HttpPost("application/website/details/simple")]

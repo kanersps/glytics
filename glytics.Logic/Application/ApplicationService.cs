@@ -227,7 +227,7 @@ namespace glytics.Logic.Application
 
         public async Task<ActionResult<IList>> GetWebsites(Common.Models.Account account)
         {
-            return account.Applications.Select(app => new {app.Address, app.Name, app.TrackingCode, app.Active}).ToList();
+            return _dbContext.Account.Include(acc => acc.Applications).FirstOrDefault(acc => acc.Id == account.Id)?.Applications.Select(app => new {app.Address, app.Name, app.TrackingCode, app.Active}).ToList();
         }
 
         public async Task<ApplicationCreateMessage> CreateWebsite(Common.Models.Account _account, Website website)

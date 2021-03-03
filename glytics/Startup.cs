@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using glytics.Data;
 using glytics.Data.Persistence;
 using glytics.Logic.Account;
@@ -36,24 +36,8 @@ namespace glytics
 
             services.AddScoped<AccountService>();
             services.AddScoped<ApplicationService>();
-            
-            services
-                .AddScoped<Analytic>()
-                .AddDbContext<GlyticsDbContext>(options =>
-            {
-                string connectionString = Environment.GetEnvironmentVariable("connection_string");
-                if (string.IsNullOrEmpty(connectionString))
-                    connectionString = Configuration.GetConnectionString("home");
-                
-                options
-                    .UseMySql(connectionString,
-                        new MariaDbServerVersion(new Version(10, 5, 8)),
-                        mariadbOptions =>
-                        {
-                            mariadbOptions.CharSetBehavior(CharSetBehavior.NeverAppend);
-                            mariadbOptions.MigrationsAssembly("glytics.Data");
-                        });
-            });
+            services.AddScoped<Analytic>();
+            services.AddTransient<UnitOfWork>();
 
             services.AddDbContext<GlyticsDbContext>(options =>
             {

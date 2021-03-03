@@ -15,13 +15,13 @@ namespace glytics.Controllers
     [ApiController]
     public class StatisticController : ControllerBase
     {
-        private readonly GlyticsDbContext _db;
         private readonly IBrowserDetector _browserDetector;
         private readonly Analytic _analytic;
+        private readonly UnitOfWork _unitOfWork;
 
-        public StatisticController(GlyticsDbContext dbContext, IBrowserDetector browserDetector, Analytic analytic)
+        public StatisticController(IBrowserDetector browserDetector, Analytic analytic, UnitOfWork unitOfWork)
         {
-            _db = dbContext;
+            _unitOfWork = unitOfWork;
             _browserDetector = browserDetector;
             _analytic = analytic;
         }
@@ -34,12 +34,12 @@ namespace glytics.Controllers
             if (request.Type != "view")
                 return new BadRequestResult();
 
-            Application site = await _db.Application.Include(app => app.Statistic).Include(app => app.BrowserStatistic).Include(app => app.PathStatistic).AsSplitQuery().OrderBy(a => a.Active).SingleAsync(app => app.TrackingCode == request.Id);
+            Application site = _unitOfWork.Application.GetWithStatistics(request.Id);
 
             if (site == null || site.Active == false)
                 return new BadRequestResult();
 
-            await _analytic.New(site, _db, request, _browserDetector.Browser, Request);
+            await _analytic.New(site, request, _browserDetector.Browser, Request);
             
             return new OkResult();
         }

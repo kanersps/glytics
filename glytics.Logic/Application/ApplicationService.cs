@@ -6,6 +6,7 @@ using System.Security.Cryptography;
 using System.Threading.Tasks;
 using glytics.Common.Models.Applications;
 using glytics.Data.Persistence;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -13,11 +14,11 @@ namespace glytics.Logic.Application
 {
     public class ApplicationService
     {
-        private readonly GlyticsDbContext _dbContext;
+        private readonly UnitOfWork _unitOfWork;
         
-        public ApplicationService(GlyticsDbContext _db)
+        public ApplicationService(UnitOfWork unitOfWork)
         {
-            _dbContext = _db;
+            _unitOfWork = unitOfWork;
         }
         
         private string GenerateTrackingJavascript(string id)
@@ -43,12 +44,7 @@ namespace glytics.Logic.Application
         
         public WebsiteDetails GetWebsiteDetails(long[] curRange, string trackingCode)
         {
-            Common.Models.Applications.Application web = _dbContext.Application.Include(app => app.BrowserStatistic)
-                .Include(app => app.Statistic)
-                .Include(app => app.PathStatistic)
-                .AsSplitQuery()
-                .OrderBy(a => a.Active)
-                .FirstOrDefault(w => w.TrackingCode == trackingCode);
+            Common.Models.Applications.Application web = _unitOfWork.Application.GetDetails(trackingCode);
 
             var hourly = new List<long[]>();
             var hourlyPath = new List<dynamic[]>();
@@ -108,7 +104,8 @@ namespace glytics.Logic.Application
 
         public async Task<SimpleWebsiteDetails> GetWebsite(TrackingCode trackingCode)
         {
-            Common.Models.Applications.Application web = _dbContext.Application.Include(app => app.Statistic).FirstOrDefault(w => w.TrackingCode == trackingCode.trackingCode);
+            Common.Models.Applications.Application web =
+                _unitOfWork.Application.GetWithStatistics(trackingCode.trackingCode);
 
             if (web == null)
                 return null;
@@ -155,7 +152,7 @@ namespace glytics.Logic.Application
 
             if (searchRequest.Term.Length > 1)
             {
-                applications = _dbContext.Application.Where(app => app.Account.Id == account.Id && app.Name.ToLower().Contains(searchRequest.Term)).ToList();
+                applications = _unitOfWork.Application.Search(account, searchRequest.Term);
             }
 
             SearchResults results = new SearchResults()
@@ -177,13 +174,13 @@ namespace glytics.Logic.Application
 
         public async Task<bool> Deactivate(Common.Models.Account account, ApplicationRemove website)
         {
-            Common.Models.Applications.Application web = _dbContext.Application.FirstOrDefault(w => w.TrackingCode == website.TrackingCode && w.Account.Id == account.Id);
+            Common.Models.Applications.Application web = _unitOfWork.Application.GetByOwnerAndTrackingCode(account, website.TrackingCode);
 
             if (web != null)
             {
                 web.Active = false;
                 
-                await _dbContext.SaveChangesAsync();
+                _unitOfWork.Save();
                     
                 return true;
             }
@@ -195,13 +192,14 @@ namespace glytics.Logic.Application
         
         public async Task<bool> Activate(Common.Models.Account account, ApplicationRemove website)
         {
-            Common.Models.Applications.Application web = _dbContext.Application.FirstOrDefault(w => w.TrackingCode == website.TrackingCode && w.Account.Id == account.Id);
+            Common.Models.Applications.Application web =
+                _unitOfWork.Application.GetByOwnerAndTrackingCode(account, website.TrackingCode);
 
             if (web != null)
             {
                 web.Active = true;
                 
-                await _dbContext.SaveChangesAsync();
+                _unitOfWork.Save();
 
                 return true;
             }
@@ -213,34 +211,32 @@ namespace glytics.Logic.Application
 
         public async Task<bool> Delete(Common.Models.Account account, ApplicationRemove website)
         {
-            Common.Models.Applications.Application web = _dbContext.Application.FirstOrDefault(w => w.TrackingCode == website.TrackingCode && w.Account.Id == account.Id);
+            Common.Models.Applications.Application web = _unitOfWork.Application.GetByOwnerAndTrackingCode(account, website.TrackingCode);
 
             if (web == null)
                 return false;
             
-            _dbContext.Application.Remove(web);
+            _unitOfWork.Application.Remove(web);
                 
-            await _dbContext.SaveChangesAsync();
+            _unitOfWork.Save();
 
             return true;
         }
 
         public async Task<ActionResult<IList>> GetWebsites(Common.Models.Account account)
         {
-            return _dbContext.Account.Include(acc => acc.Applications).FirstOrDefault(acc => acc.Id == account.Id)?.Applications.Select(app => new {app.Address, app.Name, app.TrackingCode, app.Active}).ToList();
+            return _unitOfWork.Application.GetWebsitesByOwner(account).Select(app => new {app.Address, app.Name, app.TrackingCode, app.Active}).ToList();
         }
 
-        public async Task<ApplicationCreateMessage> CreateWebsite(Common.Models.Account _account, Website website)
+        public async Task<ApplicationCreateMessage> CreateWebsite(Common.Models.Account account, Website website)
         {
-            Common.Models.Account account = await _dbContext.Account.Include(a => a.Applications).FirstOrDefaultAsync(u => u.Id == _account.Id);
-
             Common.Models.Applications.Application application = account.Applications.FirstOrDefault(app => app.Address == website.Address);
 
             if (application == null)
             {
                 website.TrackingCode = GenerateTrackingCode();
                 account.Applications.Add(website);
-                await _dbContext.SaveChangesAsync();
+                _unitOfWork.Save();
                     
                 return new ApplicationCreateMessage()
                 {

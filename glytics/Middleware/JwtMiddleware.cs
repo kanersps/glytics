@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using glytics.Common.Models;
+using glytics.Data.Persistence;
 using glytics.Logic.Account;
 using Microsoft.AspNetCore.Http;
 using Microsoft.IdentityModel.Tokens;
@@ -19,17 +20,17 @@ namespace glytics.Middleware
             _next = next;
         }
 
-        public async Task Invoke(HttpContext context, AccountService accountService)
+        public async Task Invoke(HttpContext context, UnitOfWork _unitOfWork)
         {
             string token = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
 
             if (!string.IsNullOrEmpty(token))
-                await AttachAccount(context, accountService, token);
+                await AttachAccount(context, _unitOfWork, token);
             
             await _next(context);
         }
 
-        private async Task AttachAccount(HttpContext context, AccountService accountService, string token)
+        private async Task AttachAccount(HttpContext context, UnitOfWork _unitOfWork, string token)
         {
             try
             {
@@ -47,7 +48,7 @@ namespace glytics.Middleware
                 var jwtToken = (JwtSecurityToken)validatedToken;
                 var userId = jwtToken.Claims.First(x => x.Type == "id").Value;
 
-                context.Items["Account"] = await accountService.GetAccountById(userId);
+                context.Items["Account"] = _unitOfWork.Account.GetById(userId);
             }
             catch
             {

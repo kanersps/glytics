@@ -16,11 +16,11 @@ namespace glytics.Logic.Account
 {
     public class AccountService
     {
-        private readonly GlyticsDbContext _dbContext;
+        private readonly UnitOfWork _unitOfWork;
         
-        public AccountService(GlyticsDbContext _db)
+        public AccountService(UnitOfWork unitOfWork)
         {
-            _dbContext = _db;
+            _unitOfWork = unitOfWork;
         }
         
         private string GenerateJwtToken(Common.Models.Account account)
@@ -40,15 +40,10 @@ namespace glytics.Logic.Account
             return tokenHandler.WriteToken(token);
         }
 
-        public async Task<Common.Models.Account> GetAccountById(string id)
-        {
-            return await _dbContext.Account.FirstOrDefaultAsync(acc => acc.Id.ToString() == id);
-        }
-
         [SuppressMessage("ReSharper.DPA", "DPA0001: Memory allocation issues")]
         public async Task<AuthenticationResponse> Authenticate(LoginAccount loginAccount)
         {
-            Common.Models.Account account = await _dbContext.Account.FirstOrDefaultAsync(acc => acc.Username == loginAccount.Username);
+            Common.Models.Account account = _unitOfWork.Account.GetByUsername(loginAccount.Username);
 
             if (account != null)
             {
@@ -71,8 +66,8 @@ namespace glytics.Logic.Account
 
         public async Task<AccountMessage> Register(RegisterAccount _account)
         {
-            Common.Models.Account accountUsername = await _dbContext.Account.FirstOrDefaultAsync(a => a.Username == _account.Username);
-            Common.Models.Account accountEmail = await _dbContext.Account.FirstOrDefaultAsync(a => a.Username == _account.Username);
+            Common.Models.Account accountUsername = _unitOfWork.Account.GetByUsername(_account.Username);
+            //Common.Models.Account accountEmail = await _dbContext.Account.FirstOrDefaultAsync(a => a.Username == _account.Username);
 
             if (accountUsername != null)
             {
@@ -82,23 +77,14 @@ namespace glytics.Logic.Account
                     Message = "Username is already in use"
                 };
             }
-            
-            if (accountEmail != null)
-            {
-                return new AccountMessage()
-                {
-                    Success = false,
-                    Message = "E-Mail is already in use"
-                };
-            }
 
-            await _dbContext.Account.AddAsync(new Common.Models.Account()
+            _unitOfWork.Account.Add(new Common.Models.Account()
             {
                 Username = _account.Username,
                 Password = Argon2.Hash(_account.Password)
             });
             
-            await _dbContext.SaveChangesAsync();
+            _unitOfWork.Save();
             
             return new AccountMessage()
             {

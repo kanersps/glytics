@@ -7,5 +7,6 @@ namespace glytics.Data.Persistence.Accounts
         Account GetById(string id);
         Account GetByUsername(string username);
         Account GetByEmail(string email);
+        Account GetWithApplications(Account account);
     }
 }

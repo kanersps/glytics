@@ -42,6 +42,12 @@ namespace glytics.Data.Persistence.Applications
                 .ToList();
         }
         
+        public Application GetByAddress(Account account, string address)
+        {
+            return GlyticsDbContext.Application
+                .FirstOrDefault(app => app.Account.Id == account.Id && app.Address.ToLower().Contains(address));
+        }
+        
         public Application GetByOwnerAndTrackingCode(Account account, string trackingCode)
         {
             return GlyticsDbContext.Application

@@ -25,6 +25,11 @@ namespace glytics.Data.Persistence.Accounts
             return GlyticsDbContext.Account.FirstOrDefault(account => account.Username == username);
         }
 
+        public Account GetWithApplications(Account account)
+        {
+            return GlyticsDbContext.Account.Include(acc => acc.Applications).FirstOrDefault(acc => acc.Id.ToString() == account.Id.ToString());
+        }
+
         private GlyticsDbContext GlyticsDbContext => _dbContext as GlyticsDbContext;
     }
 }

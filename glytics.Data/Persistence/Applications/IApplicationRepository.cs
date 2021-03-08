@@ -11,5 +11,6 @@ namespace glytics.Data.Persistence.Applications
         List<Application> Search(Account account, string search);
         Application GetByOwnerAndTrackingCode(Account account, string id);
         List<Application> GetWebsitesByOwner(Account account);
+        Application GetByAddress(Account account, string address);
     }
 }

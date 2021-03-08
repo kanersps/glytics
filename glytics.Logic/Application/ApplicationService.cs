@@ -230,10 +230,13 @@ namespace glytics.Logic.Application
 
         public async Task<ApplicationCreateMessage> CreateWebsite(Common.Models.Account account, Website website)
         {
-            Common.Models.Applications.Application application = account.Applications.FirstOrDefault(app => app.Address == website.Address);
+            Common.Models.Applications.Application application =
+                _unitOfWork.Application.GetByAddress(account, website.Address);
 
             if (application == null)
             {
+                account = _unitOfWork.Account.GetWithApplications(account);
+                
                 website.TrackingCode = GenerateTrackingCode();
                 account.Applications.Add(website);
                 _unitOfWork.Save();

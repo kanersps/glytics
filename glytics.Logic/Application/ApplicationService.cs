@@ -21,16 +21,6 @@ namespace glytics.Logic.Application
             _unitOfWork = unitOfWork;
         }
         
-        private string GenerateTrackingJavascript(string id)
-        {
-            string url = "https://localhost:5001";
-
-            if (!string.IsNullOrEmpty(Environment.GetEnvironmentVariable("API_URL")))
-                url = Environment.GetEnvironmentVariable("API_URL");
-            
-            return $"<script src=\"{url}/analytics.js\"></script>\n<script>\n\tgl(\"" + id + "\").send('view')\n</script>";
-        }
-        
         private string GenerateTrackingCode()
         {
             byte[] bytes = new byte[4];
@@ -89,7 +79,7 @@ namespace glytics.Logic.Application
                 LastHourVisitors = hourlyVisitors,
                 LastMonthViews = monthlyViews,
                 LastMonthVisitors = monthlyVisitors,
-                TrackingSnippet = GenerateTrackingJavascript(web.TrackingCode)
+                TrackingSnippet = web.GenerateTrackingJavascript()
             };
         }
 

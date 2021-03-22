@@ -21,17 +21,6 @@ namespace glytics.Logic.Application
             _unitOfWork = unitOfWork;
         }
         
-        private string GenerateTrackingCode()
-        {
-            byte[] bytes = new byte[4];
-            RandomNumberGenerator rng = RandomNumberGenerator.Create();
-            rng.GetBytes(bytes);
-
-            uint uniqueIDs = BitConverter.ToUInt32(bytes, 0) % 100000000;
-
-            return $"GL-{uniqueIDs}";
-        }
-        
         public WebsiteDetails GetWebsiteDetails(long[] curRange, string trackingCode)
         {
             Common.Models.Applications.Application web = _unitOfWork.Application.GetDetails(trackingCode);
@@ -47,66 +36,14 @@ namespace glytics.Logic.Application
             if (web == null)
                 return null;
 
-            var hourlyVisitors = 0;
-            var hourlyViews = 0;
-                
-            var monthlyVisitors = 0;
-            var monthlyViews = 0;
-
-            if (web.Statistic.Count > 0)
-            {
-                ApplicationStatistic last = web.Statistic[^1];
-
-                hourlyVisitors = last.Visits;
-                hourlyViews = last.PageViews;
-
-                List<ApplicationStatistic> lastMonth =
-                    web.Statistic.OrderByDescending(stat => stat.Timestamp).Take(30 * 24).ToList();
-
-                foreach (ApplicationStatistic stat in lastMonth)
-                {
-                    monthlyViews += stat.PageViews;
-                    monthlyVisitors += stat.Visits;
-                }
-
-            }
-
-            return new SimpleWebsiteDetails()
-            {
-                Address = $"https://{web.Address}",
-                Name = web.Name,
-                LastHourViews = hourlyViews,
-                LastHourVisitors = hourlyVisitors,
-                LastMonthViews = monthlyViews,
-                LastMonthVisitors = monthlyVisitors,
-                TrackingSnippet = web.GenerateTrackingJavascript()
-            };
+            return web.GetWebsite();
         }
 
-        public async Task<SearchResults> Search(Common.Models.Account account, SearchRequest searchRequest)
+        public async Task<SearchResults> Search(Common.Models.Account _account, SearchRequest searchRequest)
         {
-            List<Common.Models.Applications.Application> applications = new List<Common.Models.Applications.Application>();
-
-            if (searchRequest.Term.Length > 1)
-            {
-                applications = _unitOfWork.Application.Search(account, searchRequest.Term);
-            }
-
-            SearchResults results = new SearchResults()
-            {
-                Results = new List<SearchResult>()
-            };
+            Common.Models.Account account = _unitOfWork.Account.GetWithApplications(_account);
             
-            foreach (Common.Models.Applications.Application application in applications)
-            {
-                results.Results.Add(new SearchResult()
-                {
-                    Title = application.Name,
-                    Location = $"/applications/website/{application.TrackingCode}"
-                });
-            }
-
-            return results;
+            return await account.Search(searchRequest);
         }
 
         public async Task<bool> Deactivate(Common.Models.Account account, ApplicationRemove website)
@@ -115,16 +52,14 @@ namespace glytics.Logic.Application
 
             if (web != null)
             {
-                web.Active = false;
+                web.Activate();
                 
                 _unitOfWork.Save();
                     
                 return true;
             }
-            else
-            {
-                return false;
-            }
+
+            return false;
         }
         
         public async Task<bool> Activate(Common.Models.Account account, ApplicationRemove website)
@@ -134,16 +69,14 @@ namespace glytics.Logic.Application
 
             if (web != null)
             {
-                web.Active = true;
+                web.Deactivate();
                 
                 _unitOfWork.Save();
-
+                    
                 return true;
             }
-            else
-            {
-                return false;
-            }
+
+            return false;
         }
 
         public async Task<bool> Delete(Common.Models.Account account, ApplicationRemove website)
@@ -173,11 +106,11 @@ namespace glytics.Logic.Application
             if (application == null)
             {
                 account = _unitOfWork.Account.GetWithApplications(account);
+
+                account.CreateWebsite(website);
                 
-                website.TrackingCode = GenerateTrackingCode();
-                account.Applications.Add(website);
                 _unitOfWork.Save();
-                    
+                
                 return new ApplicationCreateMessage()
                 {
                     Success = true,

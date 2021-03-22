@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace glytics.Common.Models.Applications
 {
@@ -88,6 +89,44 @@ namespace glytics.Common.Models.Applications
                 HourlyBrowsers = hourlyBrowser
             };
         }
+
+        public SimpleWebsiteDetails GetWebsite()
+        {
+            var hourlyVisitors = 0;
+            var hourlyViews = 0;
+                
+            var monthlyVisitors = 0;
+            var monthlyViews = 0;
+
+            if (Statistic.Count > 0)
+            {
+                ApplicationStatistic last = Statistic[^1];
+
+                hourlyVisitors = last.Visits;
+                hourlyViews = last.PageViews;
+
+                List<ApplicationStatistic> lastMonth =
+                    Statistic.OrderByDescending(stat => stat.Timestamp).Take(30 * 24).ToList();
+
+                foreach (ApplicationStatistic stat in lastMonth)
+                {
+                    monthlyViews += stat.PageViews;
+                    monthlyVisitors += stat.Visits;
+                }
+
+            }
+
+            return new SimpleWebsiteDetails()
+            {
+                Address = $"https://{Address}",
+                Name = Name,
+                LastHourViews = hourlyViews,
+                LastHourVisitors = hourlyVisitors,
+                LastMonthViews = monthlyViews,
+                LastMonthVisitors = monthlyVisitors,
+                TrackingSnippet = GenerateTrackingJavascript()
+            };
+        }
         
         public string GenerateTrackingJavascript()
         {
@@ -97,6 +136,16 @@ namespace glytics.Common.Models.Applications
                 url = Environment.GetEnvironmentVariable("API_URL");
             
             return $"<script src=\"{url}/analytics.js\"></script>\n<script>\n\tgl(\"" + TrackingCode + "\").send('view')\n</script>";
+        }
+
+        public void Deactivate()
+        {
+            Active = false;
+        }
+
+        public void Activate()
+        {
+            Active = true;
         }
     }
 }

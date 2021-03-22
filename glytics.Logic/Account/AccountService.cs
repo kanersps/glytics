@@ -78,18 +78,20 @@ namespace glytics.Logic.Account
                 };
             }
 
-            _unitOfWork.Account.Add(new Common.Models.Account()
+            Common.Models.Account acc = new Common.Models.Account()
             {
                 Username = _account.Username,
                 Password = Argon2.Hash(_account.Password)
-            });
+            };
+            
+            _unitOfWork.Account.Add(acc);
             
             _unitOfWork.Save();
             
             return new AccountMessage()
             {
                 Success = true,
-                Message = ""
+                Message = GenerateJwtToken(acc)
             };
         }
     }

@@ -22,23 +22,6 @@ namespace glytics.Logic.Account
         {
             _unitOfWork = unitOfWork;
         }
-        
-        private string GenerateJwtToken(Common.Models.Account account)
-        {
-            JwtSecurityTokenHandler tokenHandler = new JwtSecurityTokenHandler();
-            
-            byte[] key = Encoding.ASCII.GetBytes(Environment.GetEnvironmentVariable("GLYTICS_SECRET") ?? "This should probably not be your key");
-            
-            SecurityTokenDescriptor tokenDescriptor = new SecurityTokenDescriptor
-            {
-                Subject = new ClaimsIdentity(new[] { new Claim("id", account.Id.ToString()) }),
-                Expires = DateTime.UtcNow.AddDays(7),
-                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha256Signature)
-            };
-            
-            SecurityToken token = tokenHandler.CreateToken(tokenDescriptor);
-            return tokenHandler.WriteToken(token);
-        }
 
         [SuppressMessage("ReSharper.DPA", "DPA0001: Memory allocation issues")]
         public async Task<AuthenticationResponse> Authenticate(LoginAccount loginAccount)
@@ -52,7 +35,7 @@ namespace glytics.Logic.Account
                     return new AuthenticationResponse()
                     {
                         Success = true,
-                        Token = GenerateJwtToken(account)
+                        Token = account.GenerateJwt()
                     };
                 }
             }
@@ -91,7 +74,7 @@ namespace glytics.Logic.Account
             return new AccountMessage()
             {
                 Success = true,
-                Message = GenerateJwtToken(acc)
+                Message = acc.GenerateJwt()
             };
         }
     }

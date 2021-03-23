@@ -1,0 +1,101 @@
+﻿@startuml
+'https://plantuml.com/class-diagram
+
+class Account {
+    +Guid Id
+    +string Username
+    +string Password
+    +List<APIKey> ApiKeys
+    +List<Application> Applications
+    +Task<SearchResults> Search(SearchRequest searchRequest)
+    +void CreateWebsite(Website website)
+}
+
+class APIKey {
+    +Guid Key
+    +Account account
+    +string Description
+}
+
+class SearchResults {
+    +List<SearchResult> Results
+}
+
+class SearchResult {
+    +string Title
+    +string Location
+}
+
+class SearchRequest {
+    string Term
+}
+
+class Application {
+    +string TrackingCode
+    +string Type
+    +string Name
+    +string Address
+    +bool Active
+    -List<ApplicationStatistic> Statistic
+    -List<ApplicationStatisticPath> PathStatistic
+    -List<ApplicationStatisticBrowser> BrowserStatistic
+    +WebsiteDetails GetDetails(long[]? range)
+    +SimpleWebsiteDetails GetWebsite()
+    +string GenerateTrackingJavascript()
+    +void Deactivate()
+    +void Activate()
+    -List<ApplicationStatistic> GetGeneralStatisticsByRange(long[] range)
+    -List<ApplicationStatisticPath> GetPathStatisticsByRange(long[] range)
+    -List<ApplicationStatisticBrowser> GetBrowserStatisticsByRange(long[] range)
+}
+
+interface IApplicationStatistic {
+    +Guid Id
+    +DateTime Timestamp
+    +int Visits
+    +int PageViews
+}
+
+class ApplicationStatistic implements IApplicationStatistic {}
+
+class ApplicationStatisticPath implements IApplicationStatistic {
+    +string Path
+}
+
+class ApplicationStatisticBrowser implements IApplicationStatistic {
+    +string Browser
+}
+
+class WebsiteDetails {
+    +List<long[]> Hourly
+    +List<dynamic[]> HourlyPaths
+    +List<dynamic[]> HourlyBrowsers
+    +string Name
+    +string Address
+}
+
+class SimpleWebsiteDetails {
+    +string Name
+    +string Address
+    +string TrackingSnippet
+    +int LastHourViews
+    +int LastHourVisitors
+    +int LastMonthViews
+    +int LastMonthVisitors
+}
+
+
+'Relations
+Account }o-- APIKey
+SearchResult }o-- SearchResults
+Application }o-- Account
+ApplicationStatistic }o-- Application
+ApplicationStatisticPath }o-- Application
+ApplicationStatisticBrowser }o-- Application
+WebsiteDetails ||-- Application
+SimpleWebsiteDetails ||-- Application
+
+Account ..> SearchResults
+Account ..> SearchRequest
+
+@enduml

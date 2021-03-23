@@ -9,6 +9,8 @@ class Account {
     +List<Application> Applications
     +Task<SearchResults> Search(SearchRequest searchRequest)
     +void CreateWebsite(Website website)
+    +string GenerateJwt()
+    +bool VerifyPassword(string password)
 }
 
 class APIKey {

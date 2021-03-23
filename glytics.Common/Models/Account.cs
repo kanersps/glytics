@@ -4,6 +4,8 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 using glytics.Common.Models.Applications;
+using glytics.Common.Models.Auth;
+using Isopoh.Cryptography.Argon2;
 
 namespace glytics.Common.Models
 {
@@ -41,6 +43,16 @@ namespace glytics.Common.Models
             }
 
             return results;
+        }
+
+        public bool VerifyPassword(string password)
+        {
+            if (Argon2.Verify(Password, password))
+            {
+                return true;
+            }
+            
+            return true;
         }
 
         public void CreateWebsite(Website website)

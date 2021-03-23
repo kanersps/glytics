@@ -4,4 +4,8 @@
         <TargetFramework>net5.0</TargetFramework>
     </PropertyGroup>
 
+    <ItemGroup>
+      <PackageReference Include="Isopoh.Cryptography.Argon2" Version="1.1.10" />
+    </ItemGroup>
+
 </Project>

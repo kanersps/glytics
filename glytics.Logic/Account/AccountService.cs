@@ -47,7 +47,7 @@ namespace glytics.Logic.Account
 
             if (account != null)
             {
-                if (Argon2.Verify(account.Password, loginAccount.Password))
+                if (account.VerifyPassword(loginAccount.Password))
                 {
                     return new AuthenticationResponse()
                     {

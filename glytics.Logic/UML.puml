@@ -86,6 +86,27 @@ class SimpleWebsiteDetails {
     +int LastMonthVisitors
 }
 
+class AccountService {
+    -UnitOfWork _unitOfWork
+    +AccountService(UnitOfWork unitOfWork)
+    +Task<AuthenticationResponse> Authenticate(LoginAccount loginAccount)
+    +Task<AccountMessage> Register(RegisterAccount _account)
+}
+
+class ApplicationService {
+    -UnitOfWork _unitOfWork
+    +ApplicationService(UnitOfWork unitOfWork)
+    +WebsiteDetails GetWebsiteDetails(long[] curRange, string trackingCode)
+    +Task<SimpleWebsiteDetails> GetWebsite(TrackingCode trackingCode)
+    +Task<SearchResults> Search(Common.Models.Account _account, SearchRequest searchRequest)
+    +Task<bool> Deactivate(Common.Models.Account account, ApplicationRemove website)
+    +Task<bool> Activate(Common.Models.Account account, ApplicationRemove website)
+    +Task<bool> Delete(Common.Models.Account account, ApplicationRemove website)
+    +Task<ActionResult<IList>> GetWebsites(Common.Models.Account account)
+    +Task<ApplicationCreateMessage> CreateWebsite(Common.Models.Account account, Website website)
+}
+
+class UnitOfWork {}
 
 'Relations
 Account }o-- APIKey
@@ -99,5 +120,9 @@ SimpleWebsiteDetails ||-- Application
 
 Account ..> SearchResults
 Account ..> SearchRequest
+ApplicationService ..> UnitOfWork
+AccountService ..> UnitOfWork
+ApplicationService ..> Application
+AccountService ..> Account
 
 @enduml

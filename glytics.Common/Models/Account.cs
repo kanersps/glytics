@@ -56,7 +56,7 @@ namespace glytics.Common.Models
                 return true;
             }
             
-            return true;
+            return false;
         }
 
         public string GenerateJwt()

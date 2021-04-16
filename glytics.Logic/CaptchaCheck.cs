@@ -16,7 +16,7 @@ namespace glytics.Logic
         public bool Verify()
         {
             var result = false;
-            var secretKey = Environment.GetEnvironmentVariable("recaptcha_glytics");  
+            var secretKey = Environment.GetEnvironmentVariable("RECAPTCHA_GLYTICS");  
             var apiUrl = "https://www.google.com/recaptcha/api/siteverify?secret={0}&response={1}";  
             var requestUri = string.Format(apiUrl, secretKey, Response);  
             var request = (HttpWebRequest)WebRequest.Create(requestUri);

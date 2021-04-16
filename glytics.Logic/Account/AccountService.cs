@@ -16,17 +16,19 @@ namespace glytics.Logic.Account
 {
     public class AccountService
     {
-        private readonly UnitOfWork _unitOfWork;
+        private readonly UnitOfWorkAccount _unitOfWorkAccount;
+        private readonly UnitOfWorkAccountSearch _unitOfWorkAccountSearch;
         
-        public AccountService(UnitOfWork unitOfWork)
+        public AccountService(UnitOfWorkAccountSearch unitOfWork, UnitOfWorkAccount unitOfWorkAccount)
         {
-            _unitOfWork = unitOfWork;
+            _unitOfWorkAccount = unitOfWorkAccount;
+            _unitOfWorkAccountSearch = unitOfWork;
         }
 
         [SuppressMessage("ReSharper.DPA", "DPA0001: Memory allocation issues")]
         public async Task<AuthenticationResponse> Authenticate(LoginAccount loginAccount)
         {
-            Common.Models.Account account = _unitOfWork.Account.GetByUsername(loginAccount.Username);
+            Common.Models.Account account = _unitOfWorkAccountSearch.Account.GetByUsername(loginAccount.Username);
 
             if (account != null)
             {
@@ -49,7 +51,7 @@ namespace glytics.Logic.Account
 
         public async Task<AccountMessage> Register(RegisterAccount _account)
         {
-            Common.Models.Account accountUsername = _unitOfWork.Account.GetByUsername(_account.Username);
+            Common.Models.Account accountUsername = _unitOfWorkAccountSearch.Account.GetByUsername(_account.Username);
             //Common.Models.Account accountEmail = await _dbContext.Account.FirstOrDefaultAsync(a => a.Username == _account.Username);
 
             if (accountUsername != null)
@@ -67,9 +69,9 @@ namespace glytics.Logic.Account
                 Password = Argon2.Hash(_account.Password)
             };
             
-            _unitOfWork.Account.Add(acc);
+            _unitOfWorkAccount.Account.Add(acc);
             
-            _unitOfWork.Save();
+            _unitOfWorkAccount.Save();
             
             return new AccountMessage()
             {

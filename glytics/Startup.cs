@@ -1,4 +1,5 @@
 ﻿using System;
+using glytics.Common.Interface;
 using glytics.Data;
 using glytics.Data.Persistence;
 using glytics.Logic.Account;
@@ -37,7 +38,13 @@ namespace glytics
             services.AddScoped<AccountService>();
             services.AddScoped<ApplicationService>();
             services.AddScoped<Analytic>();
-            services.AddTransient<UnitOfWork>();
+
+            services.AddTransient<UnitOfWorkApplicationDetails>();
+            services.AddTransient<UnitOfWorkApplicationSearch>();
+            services.AddTransient<UnitOfWorkApplication>();
+            
+            services.AddTransient<UnitOfWorkAccount>();
+            services.AddTransient<UnitOfWorkAccountSearch>();
 
             services.AddDbContext<GlyticsDbContext>(options =>
             {

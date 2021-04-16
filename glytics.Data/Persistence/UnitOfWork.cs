@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using glytics.Common.Interface;
 using glytics.Data.Persistence.Accounts;
 using glytics.Data.Persistence.Applications;
 
@@ -7,10 +8,10 @@ namespace glytics.Data.Persistence
     public class UnitOfWork : IUnitOfWork
     {
         public IAccountRepository Account { get; private set; }
-        public IApplicationRepository Application { get; private set; }
-        
+        public IApplicationRepository Application { get; }
+
         private readonly GlyticsDbContext _context;
-        
+
         public UnitOfWork(GlyticsDbContext context)
         {
             _context = context;

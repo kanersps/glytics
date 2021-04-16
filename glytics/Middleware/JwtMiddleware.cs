@@ -20,7 +20,7 @@ namespace glytics.Middleware
             _next = next;
         }
 
-        public async Task Invoke(HttpContext context, UnitOfWork _unitOfWork)
+        public async Task Invoke(HttpContext context, UnitOfWorkAccountSearch _unitOfWork)
         {
             string token = context.Request.Headers["Authorization"].FirstOrDefault()?.Split(" ").Last();
 

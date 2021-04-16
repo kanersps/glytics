@@ -1,12 +1,10 @@
-﻿using glytics.Common.Models;
+﻿using glytics.Common.Interface;
+using glytics.Common.Interface.Account;
+using glytics.Common.Models;
 
 namespace glytics.Data.Persistence.Accounts
 {
-    public interface IAccountRepository : IRepository<Account>
+    public interface IAccountRepository : IRepository<Account>, IAccountSearch, IAccount
     {
-        Account GetById(string id);
-        Account GetByUsername(string username);
-        Account GetByEmail(string email);
-        Account GetWithApplications(Account account);
     }
 }

@@ -10,12 +10,6 @@ namespace glytics.Logic.Application.Web
 {
     public class Analytic
     {
-        private readonly UnitOfWork _unitOfWork;
-        public Analytic(UnitOfWork unitOfWork)
-        {
-            _unitOfWork = unitOfWork;
-        }
-        
         public async Task New(Common.Models.Applications.Application site, StatisticRequest request, IBrowser browserDetector, HttpRequest httpRequest)
         {
             ApplicationStatistic thisHour = site.Statistic.FirstOrDefault(stat => stat.Timestamp == Utility.RoundTimeHour(request.Sent));
@@ -79,8 +73,6 @@ namespace glytics.Logic.Application.Web
                 if(request.Unique)
                     thisHourBrowser.Visits++;
             }
-            
-            _unitOfWork.Save();
         }
     }
 }

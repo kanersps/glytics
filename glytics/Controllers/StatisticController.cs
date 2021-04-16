@@ -17,9 +17,9 @@ namespace glytics.Controllers
     {
         private readonly IBrowserDetector _browserDetector;
         private readonly Analytic _analytic;
-        private readonly UnitOfWork _unitOfWork;
+        private readonly UnitOfWorkApplicationDetails _unitOfWork;
 
-        public StatisticController(IBrowserDetector browserDetector, Analytic analytic, UnitOfWork unitOfWork)
+        public StatisticController(IBrowserDetector browserDetector, Analytic analytic, UnitOfWorkApplicationDetails unitOfWork)
         {
             _unitOfWork = unitOfWork;
             _browserDetector = browserDetector;
@@ -40,6 +40,8 @@ namespace glytics.Controllers
                 return new BadRequestResult();
 
             await _analytic.New(site, request, _browserDetector.Browser, Request);
+
+            _unitOfWork.Save();
             
             return new OkResult();
         }

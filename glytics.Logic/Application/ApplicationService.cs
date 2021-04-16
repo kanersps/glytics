@@ -14,16 +14,22 @@ namespace glytics.Logic.Application
 {
     public class ApplicationService
     {
-        private readonly UnitOfWork _unitOfWork;
+        private readonly UnitOfWorkApplicationDetails _unitOfWorkApplicationDetails;
+        private readonly UnitOfWorkApplicationSearch _unitOfWorkApplicationSearch;
+        private readonly UnitOfWorkApplication _unitOfWorkApplication;
+        private readonly UnitOfWorkAccountSearch _unitOfWorkAccountSearch;
         
-        public ApplicationService(UnitOfWork unitOfWork)
+        public ApplicationService(UnitOfWorkApplicationDetails unitOfWork, UnitOfWorkApplicationSearch unitOfWorkSearch, UnitOfWorkApplication unitOfWorkApplication, UnitOfWorkAccountSearch unitOfWorkAccountSearch)
         {
-            _unitOfWork = unitOfWork;
+            _unitOfWorkApplicationDetails = unitOfWork;
+            _unitOfWorkApplicationSearch = unitOfWorkSearch;
+            _unitOfWorkApplication = unitOfWorkApplication;
+            _unitOfWorkAccountSearch = unitOfWorkAccountSearch;
         }
         
         public WebsiteDetails GetWebsiteDetails(long[] curRange, string trackingCode)
         {
-            Common.Models.Applications.Application web = _unitOfWork.Application.GetDetails(trackingCode);
+            Common.Models.Applications.Application web = _unitOfWorkApplicationDetails.Application.GetDetails(trackingCode);
 
             return web.GetDetails(curRange);
         }
@@ -31,7 +37,7 @@ namespace glytics.Logic.Application
         public async Task<SimpleWebsiteDetails> GetWebsite(TrackingCode trackingCode)
         {
             Common.Models.Applications.Application web =
-                _unitOfWork.Application.GetWithStatistics(trackingCode.trackingCode);
+                _unitOfWorkApplicationDetails.Application.GetWithStatistics(trackingCode.trackingCode);
 
             if (web == null)
                 return null;
@@ -41,20 +47,20 @@ namespace glytics.Logic.Application
 
         public async Task<SearchResults> Search(Common.Models.Account _account, SearchRequest searchRequest)
         {
-            Common.Models.Account account = _unitOfWork.Account.GetWithApplications(_account);
+            Common.Models.Account account = _unitOfWorkAccountSearch.Account.GetWithApplications(_account);
             
             return await account.Search(searchRequest);
         }
 
         public async Task<bool> Deactivate(Common.Models.Account account, ApplicationRemove website)
         {
-            Common.Models.Applications.Application web = _unitOfWork.Application.GetByOwnerAndTrackingCode(account, website.TrackingCode);
+            Common.Models.Applications.Application web = _unitOfWorkApplicationSearch.Application.GetByOwnerAndTrackingCode(account, website.TrackingCode);
 
             if (web != null)
             {
                 web.Activate();
                 
-                _unitOfWork.Save();
+                _unitOfWorkApplicationSearch.Save();
                     
                 return true;
             }
@@ -65,13 +71,13 @@ namespace glytics.Logic.Application
         public async Task<bool> Activate(Common.Models.Account account, ApplicationRemove website)
         {
             Common.Models.Applications.Application web =
-                _unitOfWork.Application.GetByOwnerAndTrackingCode(account, website.TrackingCode);
+                _unitOfWorkApplicationSearch.Application.GetByOwnerAndTrackingCode(account, website.TrackingCode);
 
             if (web != null)
             {
                 web.Deactivate();
                 
-                _unitOfWork.Save();
+                _unitOfWorkApplicationSearch.Save();
                     
                 return true;
             }
@@ -81,35 +87,35 @@ namespace glytics.Logic.Application
 
         public async Task<bool> Delete(Common.Models.Account account, ApplicationRemove website)
         {
-            Common.Models.Applications.Application web = _unitOfWork.Application.GetByOwnerAndTrackingCode(account, website.TrackingCode);
+            Common.Models.Applications.Application web = _unitOfWorkApplicationSearch.Application.GetByOwnerAndTrackingCode(account, website.TrackingCode);
 
             if (web == null)
                 return false;
             
-            _unitOfWork.Application.Remove(web);
+            _unitOfWorkApplication.Application.Remove(web);
                 
-            _unitOfWork.Save();
+            _unitOfWorkApplication.Save();
 
             return true;
         }
 
         public async Task<ActionResult<IList>> GetWebsites(Common.Models.Account account)
         {
-            return _unitOfWork.Application.GetWebsitesByOwner(account).Select(app => new {app.Address, app.Name, app.TrackingCode, app.Active}).ToList();
+            return _unitOfWorkApplicationSearch.Application.GetWebsitesByOwner(account).Select(app => new {app.Address, app.Name, app.TrackingCode, app.Active}).ToList();
         }
 
         public async Task<ApplicationCreateMessage> CreateWebsite(Common.Models.Account account, Website website)
         {
             Common.Models.Applications.Application application =
-                _unitOfWork.Application.GetByAddress(account, website.Address);
+                _unitOfWorkApplicationSearch.Application.GetByAddress(account, website.Address);
 
             if (application == null)
             {
-                account = _unitOfWork.Account.GetWithApplications(account);
+                account = _unitOfWorkApplicationSearch.Account.GetWithApplications(account);
 
                 account.CreateWebsite(website);
                 
-                _unitOfWork.Save();
+                _unitOfWorkApplicationSearch.Save();
                 
                 return new ApplicationCreateMessage()
                 {

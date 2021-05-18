@@ -3,7 +3,7 @@ using glytics.Data.Persistence.Accounts;
 
 namespace glytics.Data.Persistence
 {
-    public class UnitOfWorkAccount : UnitOfWork, IAccountDAL
+    public class UnitOfWorkAccount : UnitOfWork, IAccountDAL, IUnitOfWorkAccount
     {
         public new IAccount Account { get; }
         

@@ -4,7 +4,7 @@ using glytics.Data.Persistence.Applications;
 
 namespace glytics.Data.Persistence
 {
-    public class UnitOfWorkApplicationSearch : UnitOfWork, IApplicationSearchDAL
+    public class UnitOfWorkApplicationSearch : UnitOfWork, IApplicationSearchDAL, IUnitOfWorkApplicationSearch
     {
         public new IApplicationSearch Application { get; }
         

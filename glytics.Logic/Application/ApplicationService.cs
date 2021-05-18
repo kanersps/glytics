@@ -14,12 +14,12 @@ namespace glytics.Logic.Application
 {
     public class ApplicationService
     {
-        private readonly UnitOfWorkApplicationDetails _unitOfWorkApplicationDetails;
-        private readonly UnitOfWorkApplicationSearch _unitOfWorkApplicationSearch;
-        private readonly UnitOfWorkApplication _unitOfWorkApplication;
-        private readonly UnitOfWorkAccountSearch _unitOfWorkAccountSearch;
+        private readonly IUnitOfWorkApplicationDetails _unitOfWorkApplicationDetails;
+        private readonly IUnitOfWorkApplicationSearch _unitOfWorkApplicationSearch;
+        private readonly IUnitOfWorkApplication _unitOfWorkApplication;
+        private readonly IUnitOfWorkAccountSearch _unitOfWorkAccountSearch;
         
-        public ApplicationService(UnitOfWorkApplicationDetails unitOfWork, UnitOfWorkApplicationSearch unitOfWorkSearch, UnitOfWorkApplication unitOfWorkApplication, UnitOfWorkAccountSearch unitOfWorkAccountSearch)
+        public ApplicationService(IUnitOfWorkApplicationDetails unitOfWork, IUnitOfWorkApplicationSearch unitOfWorkSearch, IUnitOfWorkApplication unitOfWorkApplication, IUnitOfWorkAccountSearch unitOfWorkAccountSearch)
         {
             _unitOfWorkApplicationDetails = unitOfWork;
             _unitOfWorkApplicationSearch = unitOfWorkSearch;
@@ -111,7 +111,7 @@ namespace glytics.Logic.Application
 
             if (application == null)
             {
-                account = _unitOfWorkApplicationSearch.Account.GetWithApplications(account);
+                account = _unitOfWorkAccountSearch.Account.GetWithApplications(account);
 
                 account.CreateWebsite(website);
                 

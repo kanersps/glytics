@@ -21,7 +21,6 @@
 
     <ItemGroup>
       <ProjectReference Include="..\glytics.Common\glytics.Common.csproj" />
-      <ProjectReference Include="..\glytics.Data\glytics.Data.csproj" />
     </ItemGroup>
 
 </Project>

@@ -16,10 +16,10 @@ namespace glytics.Logic.Account
 {
     public class AccountService
     {
-        private readonly UnitOfWorkAccount _unitOfWorkAccount;
-        private readonly UnitOfWorkAccountSearch _unitOfWorkAccountSearch;
+        private readonly IUnitOfWorkAccount _unitOfWorkAccount;
+        private readonly IUnitOfWorkAccountSearch _unitOfWorkAccountSearch;
         
-        public AccountService(UnitOfWorkAccountSearch unitOfWork, UnitOfWorkAccount unitOfWorkAccount)
+        public AccountService(IUnitOfWorkAccountSearch unitOfWork, IUnitOfWorkAccount unitOfWorkAccount)
         {
             _unitOfWorkAccount = unitOfWorkAccount;
             _unitOfWorkAccountSearch = unitOfWork;

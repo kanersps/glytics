@@ -39,12 +39,12 @@ namespace glytics
             services.AddScoped<ApplicationService>();
             services.AddScoped<Analytic>();
 
-            services.AddTransient<UnitOfWorkApplicationDetails>();
-            services.AddTransient<UnitOfWorkApplicationSearch>();
-            services.AddTransient<UnitOfWorkApplication>();
+            services.AddTransient<IUnitOfWorkApplicationDetails, UnitOfWorkApplicationDetails>();
+            services.AddTransient<IUnitOfWorkApplicationSearch, UnitOfWorkApplicationSearch>();
+            services.AddTransient<IUnitOfWorkApplication, UnitOfWorkApplication>();
             
-            services.AddTransient<UnitOfWorkAccount>();
-            services.AddTransient<UnitOfWorkAccountSearch>();
+            services.AddTransient<IUnitOfWorkAccount, UnitOfWorkAccount>();
+            services.AddTransient<IUnitOfWorkAccountSearch, UnitOfWorkAccountSearch>();
 
             services.AddDbContext<GlyticsDbContext>(options =>
             {
